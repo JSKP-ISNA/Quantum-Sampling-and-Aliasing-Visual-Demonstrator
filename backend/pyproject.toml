@@ -1,0 +1,18 @@
+[project]
+name = "aliasingviz-backend"
+version = "1.0.0"
+description = "AliasingViz 3D - Signal Processing Backend"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "numpy>=1.26.0",
+    "scipy>=1.12.0",
+    "websockets>=12.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.3.0",
+    "pytest>=8.0.0",
+]

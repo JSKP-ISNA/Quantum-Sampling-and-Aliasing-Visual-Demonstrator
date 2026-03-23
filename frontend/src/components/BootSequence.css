@@ -1,0 +1,155 @@
+.boot-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #030108;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.boot-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 50%, rgba(10, 255, 255, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 30%, rgba(123, 47, 255, 0.04) 0%, transparent 60%);
+}
+
+.boot-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  max-width: 600px;
+  width: 90%;
+}
+
+.boot-logo {
+  text-align: center;
+}
+
+.boot-logo-icon {
+  font-size: 48px;
+  color: #0affff;
+  text-shadow: 0 0 30px rgba(10, 255, 255, 0.5);
+  animation: bootPulse 2s ease-in-out infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes bootPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.boot-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: -1px;
+}
+
+.boot-accent {
+  background: linear-gradient(135deg, #0affff, #7b2fff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-left: 4px;
+  font-weight: 800;
+}
+
+.boot-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 4px;
+  color: rgba(10, 255, 255, 0.4);
+  margin-top: 8px;
+}
+
+.boot-terminal {
+  width: 100%;
+  background: rgba(10, 255, 255, 0.03);
+  border: 1px solid rgba(10, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.8;
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.boot-line {
+  color: rgba(10, 255, 255, 0.6);
+}
+
+.boot-line:last-of-type {
+  color: rgba(10, 255, 255, 0.9);
+}
+
+.boot-cursor {
+  display: inline-block;
+  color: #0affff;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.boot-progress-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.boot-progress-bar {
+  flex: 1;
+  height: 3px;
+  background: rgba(10, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.boot-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0affff, #7b2fff);
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(10, 255, 255, 0.4);
+  transition: width 0.1s linear;
+}
+
+.boot-progress-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(10, 255, 255, 0.5);
+  min-width: 40px;
+  text-align: right;
+}
+
+.boot-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(10, 255, 255, 0.15), transparent);
+  animation: scanDown 2.5s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scanDown {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}

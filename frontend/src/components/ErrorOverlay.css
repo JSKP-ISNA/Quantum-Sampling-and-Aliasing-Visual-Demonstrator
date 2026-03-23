@@ -1,0 +1,387 @@
+.error-overlay {
+  position: fixed;
+  top: 56px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 100;
+  pointer-events: auto;
+  max-width: 260px;
+}
+
+/* ─── Connection Badge ─────────────────────────────── */
+.connection-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  width: fit-content;
+  align-self: flex-end;
+  backdrop-filter: blur(16px);
+}
+
+.connection-badge.connected {
+  background: rgba(10, 255, 255, 0.08);
+  border: 1px solid rgba(10, 255, 255, 0.2);
+  color: #0affff;
+  box-shadow: 0 0 15px rgba(10, 255, 255, 0.08);
+}
+
+.connection-badge.disconnected {
+  background: rgba(255, 60, 60, 0.08);
+  border: 1px solid rgba(255, 60, 60, 0.2);
+  color: #ff4444;
+}
+
+.connection-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+.connected .dot {
+  background: #0affff;
+  box-shadow: 0 0 8px rgba(10, 255, 255, 0.6);
+}
+
+.disconnected .dot {
+  background: #ff4444;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.7); }
+}
+
+/* ─── Panel Shared Styles ─────────────────────────── */
+.metrics-panel,
+.signal-info,
+.quantum-panel {
+  background: rgba(5, 5, 20, 0.75);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(10, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metrics-panel::before,
+.signal-info::before,
+.quantum-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(10, 255, 255, 0.3), transparent);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.panel-icon {
+  color: #0affff;
+  font-size: 12px;
+  text-shadow: 0 0 8px rgba(10, 255, 255, 0.4);
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(10, 255, 255, 0.7);
+  letter-spacing: 2px;
+}
+
+.panel-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(10, 255, 255, 0.12), transparent);
+  animation: panelScan 4s linear infinite;
+}
+
+@keyframes panelScan {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* ─── Circular Gauges ─────────────────────────────── */
+.gauge-row {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 8px;
+}
+
+.circular-gauge {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.gauge-track {
+  fill: none;
+  stroke: rgba(10, 255, 255, 0.06);
+  stroke-width: 3;
+}
+
+.gauge-fill {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.5s ease;
+}
+
+.gauge-fill.good {
+  stroke: #0affff;
+  filter: drop-shadow(0 0 4px rgba(10, 255, 255, 0.4));
+}
+
+.gauge-fill.warning {
+  stroke: #ff6a3a;
+  filter: drop-shadow(0 0 4px rgba(255, 106, 58, 0.4));
+}
+
+.gauge-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+}
+
+.gauge-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.gauge-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: rgba(10, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+
+/* ─── Metric Rows ─────────────────────────────────── */
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.metric-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: rgba(180, 190, 220, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.metric-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.metric-value.mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+.metric-value small {
+  font-size: 8px;
+  color: rgba(180, 190, 220, 0.3);
+  margin-left: 2px;
+}
+
+/* ─── Quantum State Panel ─────────────────────────── */
+.quantum-panel {
+  border-color: rgba(123, 47, 255, 0.12);
+}
+
+.quantum-panel::before {
+  background: linear-gradient(90deg, transparent, rgba(123, 47, 255, 0.3), transparent);
+}
+
+.quantum-panel .panel-icon {
+  color: #7b2fff;
+  text-shadow: 0 0 8px rgba(123, 47, 255, 0.4);
+}
+
+.quantum-panel .panel-header h3 {
+  color: rgba(123, 47, 255, 0.7);
+}
+
+.quantum-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quantum-metric {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.q-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: rgba(180, 190, 220, 0.35);
+  letter-spacing: 1px;
+  min-width: 70px;
+  text-transform: uppercase;
+}
+
+.q-bar-container {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.q-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.q-bar-fill.coherence {
+  background: linear-gradient(90deg, #7b2fff, #0affff);
+  box-shadow: 0 0 6px rgba(10, 255, 255, 0.3);
+}
+
+.q-bar-fill.entropy {
+  background: linear-gradient(90deg, #ff2fff, #ff6a3a);
+  box-shadow: 0 0 6px rgba(255, 47, 255, 0.3);
+}
+
+.q-bar-fill.purity {
+  background: linear-gradient(90deg, #0aff88, #0affff);
+  box-shadow: 0 0 6px rgba(10, 255, 136, 0.3);
+}
+
+.q-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  min-width: 36px;
+  text-align: right;
+}
+
+.q-value.mono {
+  font-size: 10px;
+}
+
+/* ─── Alias Alert ─────────────────────────────────── */
+.alias-alert {
+  background: rgba(255, 50, 30, 0.06);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 50, 30, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  animation: alertGlow 2s ease-in-out infinite;
+}
+
+@keyframes alertGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 50, 30, 0.1); }
+  50% { box-shadow: 0 0 20px rgba(255, 50, 30, 0.2); }
+}
+
+.alias-alert-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  background: rgba(255, 50, 30, 0.12);
+  padding: 7px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #ff4444;
+}
+
+.alert-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff4444;
+  box-shadow: 0 0 8px rgba(255, 68, 68, 0.6);
+  animation: dotPulse 1s ease-in-out infinite;
+}
+
+.alias-alert-body {
+  padding: 8px 12px;
+}
+
+.alias-alert-body p {
+  margin: 3px 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
+}
+
+.alias-alert-body strong {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+/* ─── No Alias Badge ─────────────────────────────── */
+.no-alias-badge {
+  background: rgba(10, 255, 136, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(10, 255, 136, 0.12);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(10, 255, 136, 0.7);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.check-icon {
+  color: #0aff88;
+  text-shadow: 0 0 6px rgba(10, 255, 136, 0.4);
+}

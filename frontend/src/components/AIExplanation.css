@@ -1,0 +1,112 @@
+.ai-explanation-overlay {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  pointer-events: auto;
+}
+
+.ai-explanation-panel {
+  position: relative;
+  background: rgba(5, 5, 20, 0.88);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(123, 47, 255, 0.2);
+  border-radius: 12px;
+  min-width: 400px;
+  max-width: 580px;
+  overflow: hidden;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(123, 47, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Animated gradient border glow */
+.ai-border-glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(123, 47, 255, 0.3), rgba(10, 255, 255, 0.2), rgba(255, 47, 255, 0.2), rgba(123, 47, 255, 0.3));
+  background-size: 300% 300%;
+  animation: borderGlow 4s ease-in-out infinite;
+  z-index: -1;
+  filter: blur(1px);
+}
+
+@keyframes borderGlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(123, 47, 255, 0.06);
+  border-bottom: 1px solid rgba(123, 47, 255, 0.1);
+}
+
+.ai-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-icon {
+  font-size: 16px;
+  color: #7b2fff;
+  text-shadow: 0 0 10px rgba(123, 47, 255, 0.5);
+}
+
+.ai-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(123, 47, 255, 0.8);
+  letter-spacing: 2px;
+}
+
+.ai-close {
+  background: none;
+  border: none;
+  color: rgba(180, 190, 220, 0.3);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.ai-close:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ai-body {
+  padding: 14px 18px;
+}
+
+.ai-body p {
+  margin: 4px 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.ai-body p:empty {
+  height: 8px;
+}
+
+.ai-cursor {
+  color: #7b2fff;
+  animation: cursorBlink 0.6s step-end infinite;
+  font-size: 13px;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
