@@ -88,9 +88,9 @@ def get_alias_frequency(freq: float, fs: float) -> tuple[float, bool]:
     if not is_aliased:
         return freq, False
 
-    # Fold the frequency back into [0, fs/2]
-    alias_freq = abs(freq - round(freq / fs) * fs)
-    if alias_freq > nyquist:
+    # calculate the aliased frequency - iterative fold
+    alias_freq = freq % fs
+    if alias_freq > fs / 2:
         alias_freq = fs - alias_freq
 
     return alias_freq, True
@@ -99,25 +99,26 @@ def get_alias_frequency(freq: float, fs: float) -> tuple[float, bool]:
 # ─── Reconstruction (Sinc Interpolation) ─────────────────────────────
 
 def reconstruct_signal(
-    t_sampled: np.ndarray,
-    y_sampled: np.ndarray,
-    t_continuous: np.ndarray,
+    t_sampled,
+    y_sampled,
+    t_continuous,
 ) -> np.ndarray:
     """
     Reconstruct a signal from samples using sinc interpolation
-    (Whittaker-Shannon interpolation formula).
+    (Whittaker-Shannon interpolation formula) – vectorized version.
     """
     if len(t_sampled) < 2:
         return np.zeros_like(t_continuous)
 
     Ts = t_sampled[1] - t_sampled[0]  # Sampling period
-    y_reconstructed = np.zeros_like(t_continuous)
 
-    for n, (tn, yn) in enumerate(zip(t_sampled, y_sampled)):
-        y_reconstructed += yn * np.sinc((t_continuous - tn) / Ts)
+    # Create matrix of (t - tn) / Ts
+    t_matrix = (t_continuous[:, None] - t_sampled[None, :]) / Ts
+
+    # Apply sinc and perform weighted sum
+    y_reconstructed = np.sinc(t_matrix) @ y_sampled
 
     return y_reconstructed
-
 
 # ─── FFT ──────────────────────────────────────────────────────────────
 
