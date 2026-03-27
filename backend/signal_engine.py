@@ -3,6 +3,10 @@ AliasingViz 3D – Signal Processing Engine
 Core signal generation, sampling, reconstruction, and analysis.
 """
 
+import functools
+import hashlib
+import json
+
 import numpy as np
 from scipy import signal as scipy_signal
 from scipy.interpolate import interp1d
@@ -49,10 +53,20 @@ def sample_signal(
     """
     Sample a continuous signal at sampling frequency fs.
 
+    Uses the true signal duration (derived from the time step and number of
+    points) rather than t_continuous[-1], which is one step short of the
+    full duration when endpoint=False is used in generate_signal.
+
     Returns:
         (t_sampled, y_sampled)
     """
-    duration = t_continuous[-1]
+    # Compute the true signal duration from the step size
+    if len(t_continuous) >= 2:
+        dt = t_continuous[1] - t_continuous[0]
+        duration = dt * len(t_continuous)
+    else:
+        duration = t_continuous[-1]
+
     num_samples = max(int(fs * duration), 2)
     t_sampled = np.linspace(0, duration, num_samples, endpoint=False)
 
@@ -78,6 +92,7 @@ def add_noise(signal: np.ndarray, noise_level: float = 0.0) -> np.ndarray:
 def get_alias_frequency(freq: float, fs: float) -> tuple[float, bool]:
     """
     Calculate the alias frequency using the Nyquist theorem.
+    Uses iterative folding to guarantee the result is in [0, fs/2].
 
     Returns:
         (alias_freq, is_aliased) – the apparent frequency and whether aliasing occurs
@@ -88,9 +103,9 @@ def get_alias_frequency(freq: float, fs: float) -> tuple[float, bool]:
     if not is_aliased:
         return freq, False
 
-    # calculate the aliased frequency - iterative fold
+    # Fold into [0, fs/2] — standard alias formula
     alias_freq = freq % fs
-    if alias_freq > fs / 2:
+    if alias_freq > nyquist:
         alias_freq = fs - alias_freq
 
     return alias_freq, True
@@ -112,10 +127,10 @@ def reconstruct_signal(
 
     Ts = t_sampled[1] - t_sampled[0]  # Sampling period
 
-    # Create matrix of (t - tn) / Ts
+    # Create matrix of (t - tn) / Ts  — shape: (len_t_cont, len_t_samp)
     t_matrix = (t_continuous[:, None] - t_sampled[None, :]) / Ts
 
-    # Apply sinc and perform weighted sum
+    # Apply sinc and perform weighted sum via dot product
     y_reconstructed = np.sinc(t_matrix) @ y_sampled
 
     return y_reconstructed
@@ -125,10 +140,17 @@ def reconstruct_signal(
 def compute_fft(
     signal: np.ndarray,
     sample_rate: float,
-    max_bins: int = 128,
+    max_bins: int = 512,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Compute the FFT of a signal.
+
+    Args:
+        signal: Input signal array
+        sample_rate: Sample rate in Hz
+        max_bins: Maximum number of frequency bins to return (default 512).
+                  Higher values preserve more high-frequency content at the
+                  cost of larger payloads.
 
     Returns:
         (frequencies, magnitudes) – positive frequency side only, truncated to max_bins
@@ -170,6 +192,27 @@ def compute_error(
     return {"mse": round(mse, 6), "snr": round(snr, 2), "max_error": round(max_error, 4)}
 
 
+# ─── Result Caching ──────────────────────────────────────────────────
+
+# Cache keyed on rounded parameters to avoid recomputation when
+# sliders are held still or land on the same quantized value.
+_cache: dict[str, dict] = {}
+_CACHE_MAX = 64
+
+
+def _make_cache_key(freq, fs, noise_level, wave_type, duration, max_points) -> str:
+    """Create a stable cache key from rounded parameters."""
+    key_data = (
+        round(freq, 2),
+        round(fs, 2),
+        round(noise_level, 3),
+        wave_type,
+        round(duration, 4),
+        max_points,
+    )
+    return str(key_data)
+
+
 # ─── Full Pipeline ────────────────────────────────────────────────────
 
 def process_signal(
@@ -184,7 +227,18 @@ def process_signal(
     Run the full signal processing pipeline.
 
     Returns a dict with all data needed by the frontend.
+    Caches results for identical (rounded) parameters to avoid redundant
+    computation when sliders are held still.
     """
+    global _cache
+
+    # Check cache (skip for noisy signals since noise is non-deterministic)
+    cache_key = None
+    if noise_level <= 0:
+        cache_key = _make_cache_key(freq, fs, noise_level, wave_type, duration, max_points)
+        if cache_key in _cache:
+            return _cache[cache_key]
+
     # 1. Generate continuous signal (high resolution)
     t_cont, y_cont = generate_signal(freq, duration, sample_rate=10000, wave_type=wave_type)
 
@@ -220,7 +274,7 @@ def process_signal(
     y_recon_out = y_reconstructed[::step]
     y_ghost_out = y_alias_ghost[::step]
 
-    return {
+    result = {
         "signal": {
             "t": t_out.tolist(),
             "y": y_out.tolist(),
@@ -258,3 +312,13 @@ def process_signal(
             "nyquist": fs / 2.0,
         },
     }
+
+    # Store in cache (with eviction)
+    if cache_key is not None:
+        if len(_cache) >= _CACHE_MAX:
+            # Evict oldest entry
+            oldest_key = next(iter(_cache))
+            del _cache[oldest_key]
+        _cache[cache_key] = result
+
+    return result

@@ -37,7 +37,7 @@ export default function ControlPanel({ sendParams }) {
       wave_type: params.waveType,
     };
 
-    // Only send if actually changed
+    // Only send if actually changed (including wave_type)
     const prev = prevParamsRef.current;
     if (
       prev.freq !== newParams.freq ||
@@ -58,8 +58,9 @@ export default function ControlPanel({ sendParams }) {
 
   const fetchExplanation = async () => {
     try {
+      // Read fresh state at call time to avoid stale closures
       const store = useSignalStore.getState();
-      const res = await fetch('http://localhost:8000/webhook/alias', {
+      const res = await fetch('/webhook/alias', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -70,9 +71,12 @@ export default function ControlPanel({ sendParams }) {
         }),
       });
       const data = await res.json();
-      setAIExplanation(data.explanation || '');
+      const disclaimer = data.is_stub
+        ? '\n\n📝 Note: This is a rule-based explanation, not AI-generated.'
+        : '';
+      setAIExplanation((data.explanation || '') + disclaimer);
     } catch (err) {
-      setAIExplanation('⚠️ Could not reach AI backend. Is the server running?');
+      setAIExplanation('⚠️ Could not reach backend. Is the server running?');
     }
   };
 

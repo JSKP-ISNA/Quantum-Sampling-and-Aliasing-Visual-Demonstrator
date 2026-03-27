@@ -71,12 +71,13 @@ export default function Scene() {
 
       {/* Post-Processing Effects */}
       <EffectComposer multisampling={4}>
+        {/* Bloom ramps up when aliasing is detected for dramatic effect */}
         <Bloom
-          intensity={1.8}
-          luminanceThreshold={0.15}
+          intensity={aliased ? 2.8 : 1.5}
+          luminanceThreshold={aliased ? 0.1 : 0.15}
           luminanceSmoothing={0.9}
           mipmapBlur
-          radius={0.85}
+          radius={aliased ? 0.95 : 0.85}
         />
         <ChromaticAberration
           blendFunction={BlendFunction.NORMAL}
