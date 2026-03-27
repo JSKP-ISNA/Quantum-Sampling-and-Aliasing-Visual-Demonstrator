@@ -1,7 +1,18 @@
 import { useEffect, useRef, useCallback } from 'react';
 import useSignalStore from '../store/useSignalStore';
 
-const WS_URL = 'ws://localhost:8000/stream';
+// Use same-origin WebSocket URL so it works both in dev (via Vite proxy)
+// and in production (via nginx reverse proxy). Falls back to localhost:8000
+// only when window.location is unavailable (e.g. SSR).
+function getWsUrl() {
+  if (typeof window !== 'undefined') {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${proto}//${window.location.host}/stream`;
+  }
+  return 'ws://localhost:8000/stream';
+}
+
+const WS_URL = getWsUrl();
 const THROTTLE_MS = 50; // ~20 FPS max update rate
 
 /**

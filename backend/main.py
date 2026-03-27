@@ -7,7 +7,9 @@ import asyncio
 import json
 import logging
 import math
+import os
 
+import numpy as np
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -22,9 +24,17 @@ app = FastAPI(
     description="Real-time signal processing engine for 3D aliasing visualization",
 )
 
+# CORS — restrict to known dev/prod origins, fall back to permissive
+# only when CORS_ALLOW_ALL is explicitly set (e.g. hackathon mode).
+ALLOWED_ORIGINS = os.environ.get("CORS_ORIGINS", "").split(",") if os.environ.get("CORS_ORIGINS") else [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://localhost:8000",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,53 +75,72 @@ async def process_once(
 
 # ─── WebSocket Stream ────────────────────────────────────────────────
 
+def _validate_params(update: dict, params: dict) -> dict:
+    """Validate and merge incoming parameter update into current params."""
+    new_params = params.copy()
+    if "freq" in update:
+        new_params["freq"] = max(1.0, min(2000.0, float(update["freq"])))
+    if "fs" in update:
+        new_params["fs"] = max(2.0, min(5000.0, float(update["fs"])))
+    if "noise_level" in update:
+        new_params["noise_level"] = max(0.0, min(1.0, float(update["noise_level"])))
+    if "wave_type" in update:
+        if update["wave_type"] in ("sine", "square", "sawtooth", "triangle"):
+            new_params["wave_type"] = update["wave_type"]
+    return new_params
+
+
 @app.websocket("/stream")
 async def stream_signal(ws: WebSocket):
     """
-    Real-time bidirectional stream.
-    
+    Real-time bidirectional stream using asyncio.gather for separate
+    receive and send loops. This avoids the race condition where
+    wait_for timeouts silently drop incoming parameter changes under load.
+
     Client sends parameter updates as JSON:
         {"freq": 150, "fs": 400, "noise_level": 0.1, "wave_type": "sine"}
-    
-    Server continuously sends processed signal data back.
+
+    Server continuously sends processed signal data back at ~30 FPS.
     """
     await ws.accept()
     logger.info("WebSocket client connected")
 
     params = DEFAULT_PARAMS.copy()
-    frame_interval = 1 / 30  # 30 FPS to balance performance
+    running = True
+
+    async def receive_loop():
+        nonlocal params, running
+        try:
+            while running:
+                raw = await ws.receive_text()
+                try:
+                    update = json.loads(raw)
+                    params = _validate_params(update, params)
+                except (json.JSONDecodeError, ValueError) as e:
+                    logger.warning(f"Invalid parameter update: {e}")
+        except WebSocketDisconnect:
+            running = False
+        except Exception:
+            running = False
+
+    async def send_loop():
+        nonlocal running
+        try:
+            while running:
+                result = process_signal(**params)
+                await ws.send_text(json.dumps(result))
+                await asyncio.sleep(1 / 30)
+        except WebSocketDisconnect:
+            running = False
+        except Exception:
+            running = False
 
     try:
-        while True:
-            # Check for incoming parameter updates (non-blocking)
-            try:
-                raw = await asyncio.wait_for(ws.receive_text(), timeout=frame_interval)
-                update = json.loads(raw)
-
-                # Validate and update parameters
-                if "freq" in update:
-                    params["freq"] = max(1.0, min(2000.0, float(update["freq"])))
-                if "fs" in update:
-                    params["fs"] = max(2.0, min(5000.0, float(update["fs"])))
-                if "noise_level" in update:
-                    params["noise_level"] = max(0.0, min(1.0, float(update["noise_level"])))
-                if "wave_type" in update:
-                    if update["wave_type"] in ("sine", "square", "sawtooth", "triangle"):
-                        params["wave_type"] = update["wave_type"]
-
-            except asyncio.TimeoutError:
-                pass  # No update received, continue with current params
-
-            # Process signal with current parameters
-            result = process_signal(**params)
-
-            # Send data to client
-            await ws.send_text(json.dumps(result))
-
-    except WebSocketDisconnect:
-        logger.info("WebSocket client disconnected")
+        await asyncio.gather(receive_loop(), send_loop())
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
+    finally:
+        logger.info("WebSocket client disconnected")
         try:
             await ws.close()
         except Exception:
@@ -119,8 +148,6 @@ async def stream_signal(ws: WebSocket):
 
 
 # ─── Quantum State Computation ───────────────────────────────────────
-
-import numpy as np
 
 @app.get("/api/quantum-state")
 async def quantum_state(
@@ -130,8 +157,12 @@ async def quantum_state(
 ):
     """
     Compute quantum-physics-inspired state data from signal parameters.
-    Uses NumPy for Bloch sphere coordinates, von Neumann entropy,
-    coherence metrics, and superposition probability amplitudes.
+    Maps signal parameters onto a qubit Bloch-sphere representation.
+
+    NOTE: This is a creative/educational analogy mapping signal processing
+    concepts to quantum state visualization. The math follows correct qubit
+    density matrix formalism but the *mapping* from signal params to quantum
+    angles is a pedagogical metaphor, not a physical model.
     """
     nyquist = fs / 2.0
     ratio = min(freq / max(nyquist, 1.0), 2.0)
@@ -149,7 +180,10 @@ async def quantum_state(
     beta_sq = (math.sin(theta / 2)) ** 2
 
     # Quantum coherence: Off-diagonal density matrix element magnitude
-    coherence = abs(math.sin(theta)) * math.exp(-noise_level * 2.0)
+    # |rho_01| = |alpha * beta| for pure state, decayed by noise
+    alpha = math.cos(theta / 2)
+    beta = math.sin(theta / 2)
+    coherence = abs(alpha * beta) * math.exp(-noise_level * 2.0)
 
     # Von Neumann entropy: S = -sum(p * log(p))
     eigenvalues = np.array([alpha_sq, beta_sq])
@@ -159,8 +193,11 @@ async def quantum_state(
     # Fidelity (how close to a pure state)
     fidelity = max(alpha_sq, beta_sq)
 
-    # Purity: Tr(rho^2) for a qubit
-    purity = alpha_sq ** 2 + beta_sq ** 2 + 2 * (coherence / 2) ** 2
+    # Purity: Tr(rho^2) for a qubit density matrix
+    # rho = [[alpha_sq, alpha*beta*e^{-i*phi} * decay],
+    #         [alpha*beta*e^{i*phi} * decay, beta_sq]]
+    # Tr(rho^2) = alpha_sq^2 + beta_sq^2 + 2*|rho_01|^2
+    purity = alpha_sq ** 2 + beta_sq ** 2 + 2 * coherence ** 2
 
     return {
         "bloch": {"x": round(bloch_x, 4), "y": round(bloch_y, 4), "z": round(bloch_z, 4)},
@@ -181,12 +218,16 @@ async def quantum_state(
 async def alias_webhook(data: dict):
     """
     Stub endpoint for n8n automation.
-    In production, n8n would call this or be called by this endpoint.
+
+    ⚠️  This returns a template-based explanation, NOT an LLM-generated one.
+    In production, connect this to n8n → LLM workflow for real AI analysis.
+    The frontend labels this as "AI Analysis" but it is rule-based string
+    formatting until an actual LLM backend is configured.
     """
     logger.info(f"Alias webhook triggered: {data}")
 
-    # Placeholder response - in production, n8n would process this
-    explanation = ""
+    is_stub = True  # Flag so the frontend can show a disclaimer
+
     if data.get("aliased", False):
         freq = data.get("freq", 0)
         fs = data.get("fs", 0)
@@ -200,7 +241,7 @@ async def alias_webhook(data: dict):
     else:
         explanation = "✅ No aliasing detected. The sampling rate satisfies the Nyquist criterion."
 
-    return {"explanation": explanation, "status": "processed"}
+    return {"explanation": explanation, "status": "processed", "is_stub": is_stub}
 
 
 # ─── Entry Point ──────────────────────────────────────────────────────
