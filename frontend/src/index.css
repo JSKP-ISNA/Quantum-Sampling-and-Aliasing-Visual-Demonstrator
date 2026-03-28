@@ -1,50 +1,38 @@
-/* ═══════════════════════════════════════════════════════════════════════
-   QUANTUM DESIGN SYSTEM — Global Tokens, Typography, Utilities
-   ═══════════════════════════════════════════════════════════════════════ */
-
 *, *::before, *::after {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
 :root {
-  /* ── Core Palette ──────────────────────────────────────────────── */
-  --bg-void:        #030108;
-  --bg-deep:        #050510;
-  --bg-surface:     #0a0a1a;
-  --bg-elevated:    #0e0e24;
-  --bg-card:        rgba(8, 8, 28, 0.82);
+  --bg-void: #0a1016;
+  --bg-deep: #0e151d;
+  --bg-surface: #131c26;
+  --bg-elevated: #182330;
+  --bg-card: rgba(16, 24, 33, 0.82);
 
-  /* ── Text ──────────────────────────────────────────────────────── */
-  --text-primary:   rgba(255, 255, 255, 0.92);
-  --text-secondary: rgba(200, 210, 230, 0.55);
-  --text-muted:     rgba(150, 160, 180, 0.35);
-  --text-dim:       rgba(120, 130, 160, 0.25);
+  --text-primary: rgba(244, 240, 232, 0.96);
+  --text-secondary: rgba(205, 214, 224, 0.78);
+  --text-muted: rgba(152, 166, 182, 0.62);
+  --text-dim: rgba(106, 118, 132, 0.48);
 
-  /* ── Neon Accents ──────────────────────────────────────────────── */
-  --neon-cyan:      #0affff;
-  --neon-purple:    #7b2fff;
-  --neon-magenta:   #ff2fff;
-  --neon-green:     #0aff88;
-  --neon-red:       #ff3322;
-  --neon-amber:     #ffcc00;
-  --neon-blue:      #3b82f6;
+  --neon-cyan: #8fa9bf;
+  --neon-purple: #8b808a;
+  --neon-magenta: #b4836c;
+  --neon-green: #79a595;
+  --neon-red: #c8796c;
+  --neon-amber: #c8a06a;
+  --neon-blue: #6e8daa;
 
-  /* ── Semantic ──────────────────────────────────────────────────── */
-  --success:        #0aff88;
-  --warning:        #ffcc00;
-  --danger:         #ff3322;
-  --info:           #0affff;
+  --success: #79a595;
+  --warning: #c8a06a;
+  --danger: #c8796c;
+  --info: #8fa9bf;
 
-  /* ── Glass ─────────────────────────────────────────────────────── */
-  --glass-bg:       rgba(5, 5, 20, 0.75);
-  --glass-bg-light: rgba(10, 10, 30, 0.6);
-  --glass-border:   rgba(10, 255, 255, 0.06);
-  --glass-border-hover: rgba(10, 255, 255, 0.15);
-  --glass-blur:     blur(20px);
+  --glass-bg: rgba(15, 22, 31, 0.78);
+  --glass-bg-light: rgba(18, 27, 37, 0.68);
+  --glass-border: rgba(143, 169, 191, 0.1);
+  --glass-border-hover: rgba(143, 169, 191, 0.18);
+  --glass-blur: blur(18px);
 
-  /* ── Spacing ───────────────────────────────────────────────────── */
   --sp-xs: 4px;
   --sp-sm: 8px;
   --sp-md: 16px;
@@ -53,114 +41,143 @@
   --sp-2xl: 48px;
   --sp-3xl: 64px;
 
-  /* ── Radius ────────────────────────────────────────────────────── */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 28px;
   --radius-full: 9999px;
 
-  /* ── Shadows ───────────────────────────────────────────────────── */
-  --shadow-sm:  0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.3);
-  --shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-xl:  0 12px 48px rgba(0, 0, 0, 0.5);
-  --shadow-glow-cyan:   0 0 20px rgba(10, 255, 255, 0.15);
-  --shadow-glow-purple: 0 0 20px rgba(123, 47, 255, 0.15);
+  --shadow-sm: 0 8px 18px rgba(3, 7, 10, 0.12);
+  --shadow-md: 0 16px 34px rgba(3, 7, 10, 0.18);
+  --shadow-lg: 0 24px 60px rgba(3, 7, 10, 0.24);
+  --shadow-xl: 0 40px 90px rgba(3, 7, 10, 0.3);
+  --shadow-glow-cyan: 0 20px 44px rgba(8, 13, 19, 0.24);
+  --shadow-glow-purple: 0 20px 44px rgba(8, 13, 19, 0.2);
 
-  /* ── Layout ────────────────────────────────────────────────────── */
-  --sidebar-width: 72px;
-  --sidebar-expanded: 220px;
+  --sidebar-width: 112px;
+  --sidebar-mobile-height: 82px;
   --header-height: 52px;
 
-  /* ── Transitions ───────────────────────────────────────────────── */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-fast: 150ms;
   --duration-base: 250ms;
   --duration-slow: 500ms;
 }
 
-/* ── Typography ──────────────────────────────────────────────────── */
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
   height: 100%;
+  margin: 0;
   overflow: hidden;
-  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Outfit', sans-serif;
   color: var(--text-primary);
   background: var(--bg-void);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Space Grotesk', 'Outfit', sans-serif;
+body {
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
+  line-height: 1.12;
   letter-spacing: -0.02em;
-  line-height: 1.2;
 }
 
 .mono {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 .label-text {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
   font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
-/* ── Scrollbar ───────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: rgba(10, 255, 255, 0.12);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(10, 255, 255, 0.25);
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-/* Firefox */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(143, 169, 191, 0.18);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(143, 169, 191, 0.28);
+}
+
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(10, 255, 255, 0.12) transparent;
+  scrollbar-color: rgba(143, 169, 191, 0.2) transparent;
 }
 
-/* ── Selection ───────────────────────────────────────────────────── */
 ::selection {
-  background: rgba(123, 47, 255, 0.3);
-  color: white;
+  background: rgba(200, 160, 106, 0.3);
+  color: #fffdf8;
 }
 
-/* ── Focus ───────────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid var(--neon-cyan);
+  outline: 2px solid rgba(200, 160, 106, 0.56);
   outline-offset: 2px;
 }
 
-/* ── Utility Classes ─────────────────────────────────────────────── */
 .glass-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  position: relative;
-  overflow: hidden;
 }
 
 .glass-panel::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  inset: 0 0 auto;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(10, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
   pointer-events: none;
 }
 
@@ -170,67 +187,110 @@ h1, h2, h3, h4, h5, h6 {
 
 .neon-text-cyan {
   color: var(--neon-cyan);
-  text-shadow: 0 0 12px rgba(10, 255, 255, 0.4);
 }
 
 .neon-text-purple {
   color: var(--neon-purple);
-  text-shadow: 0 0 12px rgba(123, 47, 255, 0.4);
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  background: linear-gradient(135deg, #d9c29f, #96aec4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* ── Keyframes ───────────────────────────────────────────────────── */
 @keyframes pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%, 100% {
+    opacity: 0.68;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
 }
 
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(10, 255, 255, 0.1); }
-  50% { box-shadow: 0 0 20px rgba(10, 255, 255, 0.25); }
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+
+  50% {
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.12);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes scanline {
-  0% { top: 0; opacity: 0; }
-  10% { opacity: 0.6; }
-  90% { opacity: 0.6; }
-  100% { top: 100%; opacity: 0; }
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 0.45;
+  }
+
+  85% {
+    opacity: 0.45;
+  }
+
+  100% {
+    transform: translateY(220%);
+    opacity: 0;
+  }
 }
 
 @keyframes borderGradient {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* ── Recharts Global Overrides ───────────────────────────────────── */
 .recharts-cartesian-grid-horizontal line,
 .recharts-cartesian-grid-vertical line {
-  stroke: rgba(10, 255, 255, 0.04) !important;
+  stroke: rgba(255, 255, 255, 0.05) !important;
 }
 
 .recharts-text {
-  fill: rgba(200, 210, 230, 0.45) !important;
+  fill: rgba(184, 195, 208, 0.58) !important;
   font-family: 'JetBrains Mono', monospace !important;
   font-size: 10px !important;
 }
@@ -240,20 +300,31 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .recharts-default-tooltip {
-  background: rgba(5, 5, 20, 0.92) !important;
-  border: 1px solid rgba(10, 255, 255, 0.15) !important;
-  border-radius: 8px !important;
+  background: rgba(13, 19, 27, 0.96) !important;
+  border: 1px solid rgba(143, 169, 191, 0.16) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 24px 50px rgba(4, 8, 12, 0.24) !important;
   backdrop-filter: blur(16px) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
 }
 
 .recharts-tooltip-label {
-  color: rgba(10, 255, 255, 0.8) !important;
+  color: rgba(223, 214, 197, 0.86) !important;
   font-family: 'JetBrains Mono', monospace !important;
   font-size: 11px !important;
 }
 
 .recharts-tooltip-item {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: rgba(234, 239, 244, 0.8) !important;
   font-size: 11px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

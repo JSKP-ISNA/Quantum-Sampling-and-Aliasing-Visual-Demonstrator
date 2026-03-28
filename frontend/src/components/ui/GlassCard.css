@@ -1,29 +1,51 @@
 .glass-card {
   position: relative;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
   transition: border-color var(--duration-base) ease, box-shadow var(--duration-base) ease;
 }
 
 .glass-card:hover {
   border-color: var(--glass-border-hover);
+  box-shadow: var(--shadow-md);
 }
 
-/* ── Variants ──────────────────────── */
-.glass-card--default .glass-card__glow { background: linear-gradient(90deg, transparent, rgba(10, 255, 255, 0.2), transparent); }
-.glass-card--purple  .glass-card__glow { background: linear-gradient(90deg, transparent, rgba(123, 47, 255, 0.25), transparent); }
-.glass-card--purple { border-color: rgba(123, 47, 255, 0.1); }
-.glass-card--purple:hover { border-color: rgba(123, 47, 255, 0.2); }
-.glass-card--danger  .glass-card__glow { background: linear-gradient(90deg, transparent, rgba(255, 51, 34, 0.25), transparent); }
-.glass-card--danger { border-color: rgba(255, 51, 34, 0.1); }
-.glass-card--success .glass-card__glow { background: linear-gradient(90deg, transparent, rgba(10, 255, 136, 0.25), transparent); }
-.glass-card--success { border-color: rgba(10, 255, 136, 0.1); }
+.glass-card--default .glass-card__glow {
+  background: linear-gradient(90deg, transparent, rgba(143, 169, 191, 0.24), transparent);
+}
 
-/* ── Top Glow Line ─────────────────── */
+.glass-card--purple .glass-card__glow {
+  background: linear-gradient(90deg, transparent, rgba(176, 164, 171, 0.24), transparent);
+}
+
+.glass-card--purple {
+  border-color: rgba(176, 164, 171, 0.14);
+}
+
+.glass-card--purple:hover {
+  border-color: rgba(176, 164, 171, 0.2);
+}
+
+.glass-card--danger .glass-card__glow {
+  background: linear-gradient(90deg, transparent, rgba(200, 121, 108, 0.26), transparent);
+}
+
+.glass-card--danger {
+  border-color: rgba(200, 121, 108, 0.14);
+}
+
+.glass-card--success .glass-card__glow {
+  background: linear-gradient(90deg, transparent, rgba(121, 165, 149, 0.26), transparent);
+}
+
+.glass-card--success {
+  border-color: rgba(121, 165, 149, 0.14);
+}
+
 .glass-card__glow {
   position: absolute;
   top: 0;
@@ -33,64 +55,53 @@
   pointer-events: none;
 }
 
-/* ── Scanline ──────────────────────── */
 .glass-card__scanline {
   position: absolute;
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(10, 255, 255, 0.08), transparent);
-  animation: scanline 5s linear infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+  animation: scanline 7s linear infinite;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.28;
 }
 
-/* ── Header ────────────────────────── */
 .glass-card__header {
   display: flex;
   align-items: center;
   gap: var(--sp-sm);
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(10, 255, 255, 0.04);
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .glass-card__icon {
   font-size: 14px;
-  color: var(--neon-cyan);
-  text-shadow: 0 0 10px rgba(10, 255, 255, 0.4);
+  color: rgba(220, 209, 191, 0.92);
   line-height: 1;
 }
 
-.glass-card--purple .glass-card__icon {
-  color: var(--neon-purple);
-  text-shadow: 0 0 10px rgba(123, 47, 255, 0.4);
-}
-
-.glass-card--danger .glass-card__icon {
-  color: var(--neon-red);
-  text-shadow: 0 0 10px rgba(255, 51, 34, 0.4);
-}
-
-.glass-card--success .glass-card__icon {
-  color: var(--neon-green);
-  text-shadow: 0 0 10px rgba(10, 255, 136, 0.4);
-}
-
 .glass-card__title {
+  margin: 0;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(10, 255, 255, 0.7);
-  margin: 0;
+  color: rgba(213, 221, 231, 0.74);
 }
 
-.glass-card--purple .glass-card__title { color: rgba(123, 47, 255, 0.7); }
-.glass-card--danger .glass-card__title { color: rgba(255, 51, 34, 0.7); }
-.glass-card--success .glass-card__title { color: rgba(10, 255, 136, 0.7); }
+.glass-card--purple .glass-card__title {
+  color: rgba(210, 196, 204, 0.76);
+}
 
-/* ── Body ──────────────────────────── */
+.glass-card--danger .glass-card__title {
+  color: rgba(232, 191, 183, 0.8);
+}
+
+.glass-card--success .glass-card__title {
+  color: rgba(205, 229, 219, 0.78);
+}
+
 .glass-card__body {
   padding: 14px 16px;
 }

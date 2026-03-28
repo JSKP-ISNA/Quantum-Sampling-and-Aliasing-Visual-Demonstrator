@@ -1,17 +1,13 @@
-import { NavLink, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { motion as Motion } from 'framer-motion';
 import { FiActivity, FiCpu } from 'react-icons/fi';
-import {
-  RiDashboardFill,
-  RiPulseFill,
-  RiServerFill,
-} from 'react-icons/ri';
+import { RiDashboardFill, RiPulseFill, RiServerFill } from 'react-icons/ri';
 import StatusDot from '../ui/StatusDot';
 import useSignalStore from '../../store/useSignalStore';
 import './Sidebar.css';
 
 const NAV_ITEMS = [
-  { path: '/', label: 'Dashboard', icon: RiDashboardFill },
+  { path: '/dashboard', label: 'Overview', icon: RiDashboardFill },
   { path: '/signal-lab', label: 'Signal Lab', icon: FiActivity },
   { path: '/quantum-lab', label: 'Quantum Lab', icon: FiCpu },
   { path: '/nyquist', label: 'Nyquist', icon: RiPulseFill },
@@ -19,17 +15,21 @@ const NAV_ITEMS = [
 ];
 
 export default function Sidebar() {
-  const connected = useSignalStore((s) => s.connected);
+  const connected = useSignalStore((state) => state.connected);
   const location = useLocation();
 
   return (
     <nav className="sidebar" id="sidebar-nav">
-      {/* Logo */}
-      <div className="sidebar__logo">
-        <span className="sidebar__logo-icon">◈</span>
+      <div className="sidebar__brand">
+        <Link className="sidebar__brand-link" to="/">
+          <span className="sidebar__brand-mark">QS</span>
+          <span className="sidebar__brand-copy">
+            <strong>Quantum</strong>
+            <small>Studio</small>
+          </span>
+        </Link>
       </div>
 
-      {/* Navigation */}
       <div className="sidebar__nav">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
@@ -42,13 +42,13 @@ export default function Sidebar() {
               className={({ isActive: routeActive }) =>
                 `sidebar__link ${routeActive ? 'sidebar__link--active' : ''}`
               }
-              id={`nav-${item.path.replace('/', '') || 'dashboard'}`}
+              id={`nav-${item.path.replace('/', '')}`}
             >
               {isActive && (
-                <motion.div
+                <Motion.div
                   className="sidebar__active-bg"
                   layoutId="activeNav"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  transition={{ type: 'spring', stiffness: 360, damping: 30 }}
                 />
               )}
               <Icon className="sidebar__icon" />
@@ -58,13 +58,15 @@ export default function Sidebar() {
         })}
       </div>
 
-      {/* Footer */}
       <div className="sidebar__footer">
         <StatusDot
           status={connected ? 'online' : 'offline'}
-          size={6}
+          size={8}
+          label={connected ? 'Realtime link' : 'Offline'}
         />
-        <span className="sidebar__version">v2.0</span>
+        <Link className="sidebar__home" to="/">
+          Front Page
+        </Link>
       </div>
     </nav>
   );

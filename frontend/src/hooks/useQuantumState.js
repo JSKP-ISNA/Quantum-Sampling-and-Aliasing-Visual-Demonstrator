@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import useSignalStore from '../store/useSignalStore';
+import { apiUrl } from '../lib/network';
 
 /**
  * Hook that fetches available quantum backends on mount
@@ -14,7 +15,7 @@ export default function useQuantumState() {
 
     const fetchBackends = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/quantum/backends');
+        const res = await fetch(apiUrl('/api/quantum/backends'));
         if (res.ok) {
           const data = await res.json();
           useSignalStore.getState().setAvailableBackends(data.backends || []);

@@ -1,42 +1,66 @@
-import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { motion as Motion } from 'framer-motion';
+import {
+  FiActivity,
+  FiClock,
+  FiCpu,
+  FiGrid,
+  FiMonitor,
+  FiRefreshCw,
+  FiRadio,
+  FiServer,
+  FiShield,
+} from 'react-icons/fi';
+import AnimatedNumber from '../components/ui/AnimatedNumber';
 import GlassCard from '../components/ui/GlassCard';
 import QuantumButton from '../components/ui/QuantumButton';
 import StatusDot from '../components/ui/StatusDot';
-import AnimatedNumber from '../components/ui/AnimatedNumber';
 import useSignalStore from '../store/useSignalStore';
 import './StatusPage.css';
 
-/**
- * System Status — Backend health, connection status, backend info, and performance.
- */
+function toneForHealth(healthData, healthError) {
+  if (healthError) return 'critical';
+  if (!healthData) return 'warning';
+  return 'good';
+}
+
+function formatTime(dateValue) {
+  if (!dateValue) return 'Not checked yet';
+  return new Date(dateValue).toLocaleTimeString();
+}
+
 export default function StatusPage() {
-  const connected = useSignalStore((s) => s.connected);
-  const availableBackends = useSignalStore((s) => s.availableBackends);
-  const jobStatus = useSignalStore((s) => s.quantumJobStatus);
-  const metrics = useSignalStore((s) => s.quantumMetrics);
-  const freq = useSignalStore((s) => s.freq);
-  const fs = useSignalStore((s) => s.fs);
+  const connected = useSignalStore((state) => state.connected);
+  const availableBackends = useSignalStore((state) => state.availableBackends);
+  const jobStatus = useSignalStore((state) => state.quantumJobStatus);
+  const metrics = useSignalStore((state) => state.quantumMetrics);
+  const freq = useSignalStore((state) => state.freq);
+  const fs = useSignalStore((state) => state.fs);
+  const noiseLevel = useSignalStore((state) => state.noiseLevel);
+  const waveType = useSignalStore((state) => state.waveType);
 
   const [healthData, setHealthData] = useState(null);
   const [healthError, setHealthError] = useState(null);
   const [healthLoading, setHealthLoading] = useState(false);
   const [lastChecked, setLastChecked] = useState(null);
 
+  const desktopRuntime = typeof window !== 'undefined' ? window.desktopRuntime || null : null;
+
   const checkHealth = useCallback(async () => {
     setHealthLoading(true);
     setHealthError(null);
+
     try {
-      const res = await fetch('/health');
-      if (res.ok) {
-        const data = await res.json();
-        setHealthData(data);
-        setLastChecked(new Date().toLocaleTimeString());
-      } else {
-        setHealthError(`HTTP ${res.status}`);
+      const response = await fetch('/health');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
-    } catch (err) {
-      setHealthError(err.message || 'Connection failed');
+
+      const data = await response.json();
+      setHealthData(data);
+      setLastChecked(Date.now());
+    } catch (error) {
+      setHealthError(error.message || 'Connection failed');
     } finally {
       setHealthLoading(false);
     }
@@ -44,189 +68,282 @@ export default function StatusPage() {
 
   useEffect(() => {
     checkHealth();
-    const interval = setInterval(checkHealth, 30000);
-    return () => clearInterval(interval);
+    const interval = window.setInterval(checkHealth, 30000);
+    return () => window.clearInterval(interval);
   }, [checkHealth]);
 
-  // System info
-  const systemInfo = [
-    { label: 'Frontend', value: 'React 19 + Three.js', status: 'online' },
-    { label: 'WebSocket', value: connected ? 'Connected' : 'Disconnected', status: connected ? 'online' : 'offline' },
-    { label: 'Backend API', value: healthData ? 'Healthy' : healthError ? 'Error' : 'Checking...', status: healthData ? 'online' : healthError ? 'offline' : 'loading' },
-    { label: 'Quantum Engine', value: healthData?.quantum_engine || 'Unknown', status: healthData?.quantum_engine === 'available' ? 'online' : 'warning' },
-  ];
+  const topCountEntry = useMemo(() => {
+    const entries = Object.entries(metrics.counts || {});
+    entries.sort((left, right) => right[1] - left[1]);
+    return entries[0] || ['', 0];
+  }, [metrics.counts]);
+
+  const platformCards = useMemo(() => {
+    const healthTone = toneForHealth(healthData, healthError);
+
+    return [
+      {
+        label: 'Runtime Mode',
+        value: desktopRuntime?.mode === 'webview' ? 'Desktop Webview' : 'Browser',
+        note: desktopRuntime?.platform || 'web',
+        tone: desktopRuntime?.mode === 'webview' ? 'good' : 'warning',
+        icon: <FiMonitor />,
+      },
+      {
+        label: 'Backend Health',
+        value: healthData?.status === 'ok' ? 'Healthy' : healthError ? 'Degraded' : 'Checking',
+        note: healthError || healthData?.service || 'Waiting for response',
+        tone: healthTone,
+        icon: <FiShield />,
+      },
+      {
+        label: 'Realtime Stream',
+        value: connected ? 'Connected' : 'Offline',
+        note: connected ? 'WebSocket feed is active' : 'Awaiting backend stream',
+        tone: connected ? 'good' : 'critical',
+        icon: <FiRadio />,
+      },
+      {
+        label: 'Quantum Lane',
+        value: jobStatus === 'idle' ? 'Ready' : jobStatus,
+        note: healthData?.quantum_engine?.provider || 'Provider unavailable',
+        tone: jobStatus === 'completed' || jobStatus === 'idle' ? 'good' : jobStatus === 'failed' ? 'critical' : 'warning',
+        icon: <FiCpu />,
+      },
+    ];
+  }, [connected, desktopRuntime?.mode, desktopRuntime?.platform, healthData, healthError, jobStatus]);
+
+  const runbookChecks = useMemo(() => {
+    return [
+      {
+        label: 'Health endpoint responding',
+        status: healthData?.status === 'ok' ? 'online' : healthError ? 'offline' : 'loading',
+        detail: healthData?.service || healthError || 'Waiting for response',
+      },
+      {
+        label: 'Realtime stream link',
+        status: connected ? 'online' : 'offline',
+        detail: connected ? 'Signal updates are flowing' : 'WebSocket reconnect loop is active',
+      },
+      {
+        label: 'Quantum backends discovered',
+        status: availableBackends.length ? 'online' : 'warning',
+        detail: availableBackends.length ? `${availableBackends.length} backends reported` : 'No backends returned yet',
+      },
+      {
+        label: 'Last execution result',
+        status: metrics.backendName ? 'online' : 'warning',
+        detail: metrics.backendName ? `${metrics.backendName} completed a recent run` : 'No completed quantum run recorded',
+      },
+    ];
+  }, [availableBackends.length, connected, healthData?.service, healthData?.status, healthError, metrics.backendName]);
+
+  const endpointCards = useMemo(() => {
+    return [
+      { label: '/health', summary: 'Backend heartbeat and engine config', tone: healthData?.status === 'ok' ? 'good' : 'warning' },
+      { label: '/stream', summary: 'Realtime signal transport lane', tone: connected ? 'good' : 'critical' },
+      { label: '/api/quantum/backends', summary: 'Backend capability inventory', tone: availableBackends.length ? 'good' : 'warning' },
+      { label: '/api/quantum/submit', summary: 'Async quantum execution entrypoint', tone: jobStatus === 'failed' ? 'critical' : 'good' },
+    ];
+  }, [availableBackends.length, connected, healthData?.status, jobStatus]);
+
+  const backendProvider = healthData?.quantum_engine?.provider || 'Unavailable';
+  const backendNoiseModel = healthData?.quantum_engine?.noise_model || 'Unavailable';
+  const backendShots = healthData?.quantum_engine?.shots || 0;
 
   return (
     <div className="status-page">
-      {/* Header */}
-      <div className="status-page__header">
+      <section className="status-page__header">
         <div>
-          <h1 className="page-title">System Status</h1>
-          <p className="page-subtitle">Infrastructure & Performance Monitoring</p>
+          <div className="status-page__eyebrow">Operations and runtime posture</div>
+          <h1 className="page-title">Status Center</h1>
+          <p className="page-subtitle">
+            Infrastructure view for runtime mode, transport health, backend capability, and the latest
+            execution posture across the app.
+          </p>
         </div>
+
         <div className="status-page__actions">
           <QuantumButton
             variant="cyan"
             size="sm"
             onClick={checkHealth}
             loading={healthLoading}
-            icon="↻"
+            icon={<FiRefreshCw />}
           >
-            Refresh
+            Refresh status
           </QuantumButton>
-          {lastChecked && (
-            <span className="last-checked">Last: {lastChecked}</span>
-          )}
+          <span className="status-page__last-checked">
+            <FiClock />
+            {formatTime(lastChecked)}
+          </span>
         </div>
-      </div>
+      </section>
 
-      <div className="status-grid">
-        {/* System Services */}
-        <GlassCard title="SYSTEM SERVICES" icon="◈" className="status-services-card">
-          <div className="services-list">
-            {systemInfo.map((service) => (
-              <motion.div
-                className="service-row"
-                key={service.label}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <StatusDot status={service.status} size={8} />
-                <div className="service-info">
-                  <span className="service-name">{service.label}</span>
-                  <span className={`service-value service-value--${service.status}`}>{service.value}</span>
+      <section className="status-platform-grid">
+        {platformCards.map((card, index) => (
+          <Motion.div
+            key={card.label}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.04 }}
+          >
+            <div className={`status-platform-card status-platform-card--${card.tone}`}>
+              <div className="status-platform-card__icon">{card.icon}</div>
+              <span>{card.label}</span>
+              <strong>{card.value}</strong>
+              <small>{card.note}</small>
+            </div>
+          </Motion.div>
+        ))}
+      </section>
+
+      <section className="status-layout">
+        <div className="status-column">
+          <GlassCard title="Runbook Checks" icon={<FiShield />} className="status-card">
+            <div className="status-runbook">
+              {runbookChecks.map((item) => (
+                <div key={item.label} className="status-runbook__item">
+                  <div className="status-runbook__head">
+                    <StatusDot status={item.status} size={8} />
+                    <strong>{item.label}</strong>
+                  </div>
+                  <p>{item.detail}</p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        </GlassCard>
-
-        {/* Available Backends */}
-        <GlassCard title="QUANTUM BACKENDS" icon="⚛" variant="purple">
-          {availableBackends.length > 0 ? (
-            <div className="backends-list">
-              {availableBackends.map((b, i) => (
-                <motion.div
-                  key={typeof b === 'string' ? b : b.name}
-                  className="backend-item"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                >
-                  <StatusDot status="online" size={6} />
-                  <span className="backend-name">{typeof b === 'string' ? b : b.name}</span>
-                  {typeof b !== 'string' && b.description && (
-                    <span className="backend-desc">{b.description}</span>
-                  )}
-                </motion.div>
               ))}
             </div>
-          ) : (
-            <div className="no-backends">
-              <StatusDot status="warning" size={8} label="No backends reported" />
-              <p>Backend may not be running or API is unreachable.</p>
-            </div>
-          )}
-        </GlassCard>
+          </GlassCard>
 
-        {/* Connection Details */}
-        <GlassCard title="CONNECTION DETAILS" icon="📡">
-          <div className="connection-details">
-            <div className="cd-row">
-              <span className="cd-label">Protocol</span>
-              <span className="cd-value">WebSocket (WS)</span>
-            </div>
-            <div className="cd-row">
-              <span className="cd-label">Endpoint</span>
-              <span className="cd-value cd-value--mono">/stream</span>
-            </div>
-            <div className="cd-row">
-              <span className="cd-label">Update Rate</span>
-              <span className="cd-value cd-value--mono">~20 FPS</span>
-            </div>
-            <div className="cd-row">
-              <span className="cd-label">Throttle</span>
-              <span className="cd-value cd-value--mono">50ms</span>
-            </div>
-            <div className="cd-row">
-              <span className="cd-label">Status</span>
-              <span className={`cd-value ${connected ? 'cd-value--good' : 'cd-value--bad'}`}>
-                {connected ? 'ACTIVE' : 'DISCONNECTED'}
-              </span>
-            </div>
-          </div>
-        </GlassCard>
-
-        {/* Current Signal Configuration */}
-        <GlassCard title="ACTIVE CONFIGURATION" icon="🎛️" variant="default">
-          <div className="connection-details">
-            <div className="cd-row">
-              <span className="cd-label">Signal Freq</span>
-              <span className="cd-value cd-value--mono">{freq} Hz</span>
-            </div>
-            <div className="cd-row">
-              <span className="cd-label">Sample Rate</span>
-              <span className="cd-value cd-value--mono">{fs} Hz</span>
-            </div>
-            <div className="cd-row">
-              <span className="cd-label">Nyquist</span>
-              <span className="cd-value cd-value--mono">{fs / 2} Hz</span>
-            </div>
-            <div className="cd-row">
-              <span className="cd-label">Quantum Job</span>
-              <span className={`cd-value ${jobStatus === 'completed' ? 'cd-value--good' : jobStatus === 'failed' ? 'cd-value--bad' : ''}`}>
-                {jobStatus.toUpperCase()}
-              </span>
-            </div>
-          </div>
-        </GlassCard>
-
-        {/* Last Quantum Execution */}
-        {metrics.backendName && (
-          <GlassCard title="LAST QUANTUM EXECUTION" icon="⏱" variant="purple" className="status-wide-card">
-            <div className="last-execution-grid">
-              <div className="le-item">
-                <span className="le-label">Backend</span>
-                <span className="le-value">{metrics.backendName}</span>
+          <GlassCard title="Runtime Inventory" icon={<FiGrid />} variant="purple" className="status-card">
+            <div className="status-detail-list">
+              <div className="status-detail-row">
+                <span>Origin</span>
+                <strong>{typeof window !== 'undefined' ? window.location.origin : 'n/a'}</strong>
               </div>
-              <div className="le-item">
-                <span className="le-label">Circuit Type</span>
-                <span className="le-value">{metrics.circuitType}</span>
+              <div className="status-detail-row">
+                <span>Current route</span>
+                <strong>{typeof window !== 'undefined' ? window.location.pathname : 'n/a'}</strong>
               </div>
-              <div className="le-item">
-                <span className="le-label">Execution Time</span>
-                <span className="le-value">
-                  <AnimatedNumber value={metrics.executionTime} decimals={1} suffix=" ms" />
-                </span>
+              <div className="status-detail-row">
+                <span>Signal carrier</span>
+                <strong>{freq} Hz</strong>
               </div>
-              <div className="le-item">
-                <span className="le-label">Total Workflow</span>
-                <span className="le-value">
-                  <AnimatedNumber value={metrics.totalWorkflowTime} decimals={1} suffix=" ms" />
-                </span>
+              <div className="status-detail-row">
+                <span>Sample rate</span>
+                <strong>{fs} Hz</strong>
               </div>
-              <div className="le-item">
-                <span className="le-label">Fidelity</span>
-                <span className="le-value">
-                  <AnimatedNumber value={metrics.fidelityEstimate * 100} decimals={1} suffix="%" />
-                </span>
+              <div className="status-detail-row">
+                <span>Noise level</span>
+                <strong>{(noiseLevel * 100).toFixed(1)}%</strong>
               </div>
-              <div className="le-item">
-                <span className="le-label">Noise Model</span>
-                <span className="le-value">{metrics.noiseModel}</span>
+              <div className="status-detail-row">
+                <span>Waveform</span>
+                <strong>{waveType}</strong>
               </div>
             </div>
           </GlassCard>
-        )}
 
-        {/* Health Response */}
-        {healthData && (
-          <GlassCard title="BACKEND HEALTH RESPONSE" icon="❤" variant="success" className="status-wide-card">
-            <pre className="health-json">{JSON.stringify(healthData, null, 2)}</pre>
+          <GlassCard title="Endpoints" icon={<FiServer />} className="status-card">
+            <div className="status-endpoint-grid">
+              {endpointCards.map((endpoint) => (
+                <div key={endpoint.label} className={`status-endpoint status-endpoint--${endpoint.tone}`}>
+                  <strong>{endpoint.label}</strong>
+                  <span>{endpoint.summary}</span>
+                </div>
+              ))}
+            </div>
           </GlassCard>
-        )}
-      </div>
+        </div>
+
+        <div className="status-column">
+          <GlassCard title="Quantum Engine Snapshot" icon={<FiCpu />} variant="purple" className="status-card">
+            <div className="status-snapshot-grid">
+              <div className="status-snapshot-card">
+                <span>Provider</span>
+                <strong>{backendProvider}</strong>
+              </div>
+              <div className="status-snapshot-card">
+                <span>Noise Model</span>
+                <strong>{backendNoiseModel}</strong>
+              </div>
+              <div className="status-snapshot-card">
+                <span>Default Shots</span>
+                <strong>{backendShots || 'n/a'}</strong>
+              </div>
+              <div className="status-snapshot-card">
+                <span>Discovered Backends</span>
+                <strong>{availableBackends.length}</strong>
+              </div>
+            </div>
+
+            <div className="status-backend-list">
+              {availableBackends.length ? (
+                availableBackends.map((backend) => {
+                  const name = typeof backend === 'string' ? backend : backend.name;
+                  const description = typeof backend === 'string' ? 'Backend reported by the API' : backend.description;
+
+                  return (
+                    <div key={name} className="status-backend-list__item">
+                      <div>
+                        <strong>{name}</strong>
+                        <span>{description}</span>
+                      </div>
+                      <StatusDot status="online" size={8} />
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="status-empty">
+                  <StatusDot status="warning" size={8} label="Awaiting backend inventory" />
+                </div>
+              )}
+            </div>
+          </GlassCard>
+
+          <GlassCard title="Latest Quantum Execution" icon={<FiActivity />} className="status-card">
+            <div className="status-execution-grid">
+              <div className="status-execution-cell">
+                <span>Job Status</span>
+                <strong>{jobStatus}</strong>
+              </div>
+              <div className="status-execution-cell">
+                <span>Backend</span>
+                <strong>{metrics.backendName || 'No completed run'}</strong>
+              </div>
+              <div className="status-execution-cell">
+                <span>Execution Time</span>
+                <strong>
+                  <AnimatedNumber value={metrics.executionTime || 0} decimals={1} suffix=" ms" />
+                </strong>
+              </div>
+              <div className="status-execution-cell">
+                <span>Workflow Time</span>
+                <strong>
+                  <AnimatedNumber value={metrics.totalWorkflowTime || 0} decimals={1} suffix=" ms" />
+                </strong>
+              </div>
+              <div className="status-execution-cell">
+                <span>Fidelity Estimate</span>
+                <strong>
+                  <AnimatedNumber value={(metrics.fidelityEstimate || 0) * 100} decimals={1} suffix="%" />
+                </strong>
+              </div>
+              <div className="status-execution-cell">
+                <span>Top State</span>
+                <strong>{topCountEntry[0] ? `|${topCountEntry[0]}>` : 'n/a'}</strong>
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard title="Raw Health Response" icon={<FiServer />} variant="success" className="status-card">
+            <pre className="status-health-json">
+              {healthData
+                ? JSON.stringify(healthData, null, 2)
+                : JSON.stringify({ status: healthError ? 'error' : 'checking', detail: healthError || 'Waiting for /health' }, null, 2)}
+            </pre>
+          </GlassCard>
+        </div>
+      </section>
     </div>
   );
 }
