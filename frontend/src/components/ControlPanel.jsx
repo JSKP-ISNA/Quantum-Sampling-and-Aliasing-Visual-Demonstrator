@@ -1,85 +1,86 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { useControls, button, folder } from 'leva';
+import { useEffect, useRef } from 'react';
+import { button, useControls } from 'leva';
 import useSignalStore from '../store/useSignalStore';
 
 /**
- * Leva-based interactive control panel.
- * Sends parameter updates to backend via WebSocket.
- * Includes quantum execution controls.
+ * Leva-based control surface used on the dashboard route.
+ * Sends parameter updates to the backend and mirrors settings into Zustand.
  */
 export default function ControlPanel({ sendParams, submitQuantumJob }) {
-  const setParams = useSignalStore((s) => s.setParams);
-  const setAIExplanation = useSignalStore((s) => s.setAIExplanation);
-  const setQuantumSettings = useSignalStore((s) => s.setQuantumSettings);
-  const availableBackends = useSignalStore((s) => s.availableBackends);
-  const jobStatus = useSignalStore((s) => s.quantumJobStatus);
+  const setParams = useSignalStore((state) => state.setParams);
+  const setAIExplanation = useSignalStore((state) => state.setAIExplanation);
+  const setQuantumSettings = useSignalStore((state) => state.setQuantumSettings);
+  const availableBackends = useSignalStore((state) => state.availableBackends);
+  const jobStatus = useSignalStore((state) => state.quantumJobStatus);
   const prevParamsRef = useRef({});
 
-  // ── Signal Controls ──
-  const params = useControls('🎛️ Signal Controls', {
-    frequency: { value: 100, min: 1, max: 500, step: 1, label: '📡 Frequency (Hz)' },
-    sampleRate: { value: 300, min: 10, max: 1000, step: 5, label: '🔬 Sample Rate (Hz)' },
-    noiseLevel: { value: 0, min: 0, max: 1, step: 0.01, label: '📻 Noise Level' },
+  const backendOptions = availableBackends.length
+    ? availableBackends.map((backend) => (typeof backend === 'string' ? backend : backend.name))
+    : ['local_classical', 'qiskit_simulator', 'qiskit_hardware'];
+
+  const params = useControls('Signal Controls', {
+    frequency: { value: 100, min: 1, max: 500, step: 1, label: 'Frequency (Hz)' },
+    sampleRate: { value: 300, min: 10, max: 1000, step: 5, label: 'Sample Rate (Hz)' },
+    noiseLevel: { value: 0, min: 0, max: 1, step: 0.01, label: 'Noise Level' },
     waveType: {
       value: 'sine',
       options: ['sine', 'square', 'sawtooth', 'triangle'],
-      label: '〰️ Wave Type',
+      label: 'Waveform',
     },
   });
 
-  // ── Quantum Controls ──
-  const quantumParams = useControls('⚛️ Quantum Engine', {
+  const quantumParams = useControls('Quantum Execution', {
     backend: {
       value: 'local_classical',
-      options: ['local_classical', 'qiskit_simulator', 'qiskit_hardware'],
-      label: '🔧 Backend',
+      options: backendOptions,
+      label: 'Backend',
     },
     circuitType: {
       value: 'phase_estimation',
       options: ['phase_estimation', 'quantum_sampling', 'qft'],
-      label: '🔬 Circuit Type',
+      label: 'Workflow',
     },
-    shots: { value: 1024, min: 128, max: 8192, step: 128, label: '🎯 Shots' },
-    numQubits: { value: 4, min: 2, max: 8, step: 1, label: '⟨ψ⟩ Qubits' },
+    shots: { value: 1024, min: 128, max: 8192, step: 128, label: 'Shots' },
+    numQubits: { value: 4, min: 2, max: 8, step: 1, label: 'Qubits' },
     noiseModel: {
       value: 'ideal',
       options: ['ideal', 'depolarizing', 'thermal'],
-      label: '📊 Noise Model',
+      label: 'Noise Model',
     },
-    'Run Quantum Job ⚡': button(
+    runQuantumWorkflow: button(
       () => {
-        if (submitQuantumJob) submitQuantumJob();
+        submitQuantumJob?.();
       },
-      { disabled: jobStatus === 'running' || jobStatus === 'submitting' }
+      { label: 'Run Quantum Workflow', disabled: jobStatus === 'running' || jobStatus === 'submitting' }
     ),
   });
 
-  // ── AI Assistant ──
-  useControls('🤖 AI Assistant', {
-    'Explain Aliasing': button(() => {
-      fetchExplanation();
-    }),
+  useControls('Analysis Tools', {
+    generateAliasingBrief: button(
+      () => {
+        fetchExplanation();
+      },
+      { label: 'Generate Aliasing Brief' }
+    ),
   });
 
-  // Send signal params to backend whenever they change
   useEffect(() => {
-    const newParams = {
+    const nextParams = {
       freq: params.frequency,
       fs: params.sampleRate,
       noise_level: params.noiseLevel,
       wave_type: params.waveType,
     };
 
-    // Only send if actually changed (including wave_type)
-    const prev = prevParamsRef.current;
+    const previous = prevParamsRef.current;
     if (
-      prev.freq !== newParams.freq ||
-      prev.fs !== newParams.fs ||
-      prev.noise_level !== newParams.noise_level ||
-      prev.wave_type !== newParams.wave_type
+      previous.freq !== nextParams.freq ||
+      previous.fs !== nextParams.fs ||
+      previous.noise_level !== nextParams.noise_level ||
+      previous.wave_type !== nextParams.wave_type
     ) {
-      prevParamsRef.current = newParams;
-      if (sendParams) sendParams(newParams);
+      prevParamsRef.current = nextParams;
+      sendParams?.(nextParams);
       setParams({
         freq: params.frequency,
         fs: params.sampleRate,
@@ -89,7 +90,6 @@ export default function ControlPanel({ sendParams, submitQuantumJob }) {
     }
   }, [params, sendParams, setParams]);
 
-  // Sync quantum settings to store
   useEffect(() => {
     setQuantumSettings({
       quantumBackend: quantumParams.backend,
@@ -102,9 +102,8 @@ export default function ControlPanel({ sendParams, submitQuantumJob }) {
 
   const fetchExplanation = async () => {
     try {
-      // Read fresh state at call time to avoid stale closures
       const store = useSignalStore.getState();
-      const res = await fetch('/webhook/alias', {
+      const response = await fetch('/webhook/alias', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -114,15 +113,17 @@ export default function ControlPanel({ sendParams, submitQuantumJob }) {
           alias_freq: store.aliasFreq,
         }),
       });
-      const data = await res.json();
+
+      const data = await response.json();
       const disclaimer = data.is_stub
-        ? '\n\n📝 Note: This is a rule-based explanation, not AI-generated.'
+        ? '\n\nNote: this summary is generated by the fallback rule-based explainer.'
         : '';
+
       setAIExplanation((data.explanation || '') + disclaimer);
-    } catch (err) {
-      setAIExplanation('⚠️ Could not reach backend. Is the server running?');
+    } catch {
+      setAIExplanation('Could not reach the backend analysis endpoint. Check that the server is running and try again.');
     }
   };
 
-  return null; // Leva renders its own UI panel
+  return null;
 }

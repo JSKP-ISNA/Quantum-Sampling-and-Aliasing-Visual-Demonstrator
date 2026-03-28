@@ -1,9 +1,8 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { FiActivity, FiCpu } from 'react-icons/fi';
 import {
   RiDashboardFill,
-  RiWaveFill,
-  RiAtomFill,
   RiPulseFill,
   RiServerFill,
 } from 'react-icons/ri';
@@ -13,8 +12,8 @@ import './Sidebar.css';
 
 const NAV_ITEMS = [
   { path: '/', label: 'Dashboard', icon: RiDashboardFill },
-  { path: '/signal-lab', label: 'Signal Lab', icon: RiWaveFill },
-  { path: '/quantum-lab', label: 'Quantum Lab', icon: RiAtomFill },
+  { path: '/signal-lab', label: 'Signal Lab', icon: FiActivity },
+  { path: '/quantum-lab', label: 'Quantum Lab', icon: FiCpu },
   { path: '/nyquist', label: 'Nyquist', icon: RiPulseFill },
   { path: '/status', label: 'Status', icon: RiServerFill },
 ];
