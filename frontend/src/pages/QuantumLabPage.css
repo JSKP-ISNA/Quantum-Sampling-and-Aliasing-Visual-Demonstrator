@@ -1,0 +1,294 @@
+.quantum-lab-page {
+  padding: var(--sp-lg);
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+}
+
+.quantum-lab-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+}
+
+/* ── Job Status Badge ──────────────── */
+.quantum-job-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  backdrop-filter: blur(12px);
+}
+
+.quantum-job-badge--submitting, .quantum-job-badge--running {
+  background: rgba(123, 47, 255, 0.08);
+  border: 1px solid rgba(123, 47, 255, 0.2);
+  color: #a855f7;
+}
+
+.quantum-job-badge--completed {
+  background: rgba(10, 255, 136, 0.08);
+  border: 1px solid rgba(10, 255, 136, 0.2);
+  color: var(--neon-green);
+}
+
+.quantum-job-badge--failed {
+  background: rgba(255, 51, 34, 0.08);
+  border: 1px solid rgba(255, 51, 34, 0.2);
+  color: var(--neon-red);
+}
+
+.quantum-job-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.quantum-job-badge--completed .quantum-job-badge__dot,
+.quantum-job-badge--failed .quantum-job-badge__dot {
+  animation: none;
+}
+
+/* ── Grid Layout ───────────────────── */
+.quantum-lab-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--sp-lg);
+  flex: 1;
+  min-height: 0;
+}
+
+.quantum-lab-config {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.quantum-lab-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+/* ── Config Form ───────────────────── */
+.quantum-config-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.quantum-error-msg {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--neon-red);
+  padding: 8px;
+  background: rgba(255, 51, 34, 0.05);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 51, 34, 0.1);
+  word-break: break-word;
+}
+
+/* ── Circuit Info Grid ─────────────── */
+.quantum-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.qi-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.qi-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.qi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--neon-cyan);
+}
+
+.qi-value--small {
+  font-size: 11px;
+}
+
+/* ── Histogram ─────────────────────── */
+.histogram-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--sp-sm);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ── Fidelity Gauge ────────────────── */
+.quantum-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-md);
+}
+
+.fidelity-card {
+  width: fit-content;
+  min-width: 200px;
+}
+
+.fidelity-gauge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fidelity-gauge__value {
+  position: absolute;
+  text-align: center;
+}
+
+.fidelity-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Expectation Values ────────────── */
+.ev-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ev-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ev-key {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(200, 220, 255, 0.6);
+  min-width: 50px;
+}
+
+.ev-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.ev-bar__fill {
+  height: 100%;
+  border-radius: 3px;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.ev-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  min-width: 60px;
+  text-align: right;
+}
+
+.ev-val.positive { color: var(--neon-green); }
+.ev-val.negative { color: var(--neon-red); }
+
+/* ── Comparison Grid ───────────────── */
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.comp-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.comp-cell__label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.comp-cell__value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.comp-cell__value--quantum { color: var(--neon-cyan); }
+.comp-cell__value--classical { color: var(--neon-purple); }
+.comp-cell__value--good { color: var(--neon-green); }
+.comp-cell__value--bad { color: var(--neon-red); }
+
+/* ── Empty State ───────────────────── */
+.quantum-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  text-align: center;
+}
+
+.quantum-empty-state .glass-card__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-md);
+}
+
+.empty-icon {
+  font-size: 48px;
+  opacity: 0.2;
+  animation: float 4s ease-in-out infinite;
+}
+
+.quantum-empty-state h3 {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.quantum-empty-state p {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .quantum-lab-grid {
+    grid-template-columns: 1fr;
+  }
+  .quantum-row {
+    grid-template-columns: 1fr;
+  }
+}

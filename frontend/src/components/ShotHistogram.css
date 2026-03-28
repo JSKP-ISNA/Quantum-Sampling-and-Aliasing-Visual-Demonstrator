@@ -1,0 +1,112 @@
+.shot-histogram {
+  background: rgba(5, 8, 22, 0.88);
+  border: 1px solid rgba(10, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  backdrop-filter: blur(12px);
+}
+
+.histogram-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(10, 255, 255, 0.08);
+}
+
+.histogram-icon {
+  color: #0affff;
+  font-size: 14px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.histogram-header h3 {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(200, 220, 255, 0.7);
+  flex: 1;
+  margin: 0;
+}
+
+.histogram-shots {
+  font-size: 10px;
+  color: rgba(10, 255, 255, 0.6);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.histogram-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.histogram-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 18px;
+}
+
+.bar-label {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 10px;
+  color: rgba(10, 255, 255, 0.85);
+  width: 52px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.bar-track {
+  flex: 1;
+  height: 12px;
+  background: rgba(10, 255, 255, 0.04);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(10, 255, 255, 0.06);
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  box-shadow: 0 0 8px rgba(10, 255, 255, 0.2);
+  position: relative;
+}
+
+.bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.15), transparent);
+  border-radius: 3px 3px 0 0;
+}
+
+.bar-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: rgba(200, 220, 255, 0.7);
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.bar-prob {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: rgba(10, 255, 255, 0.5);
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.histogram-overflow {
+  text-align: center;
+  font-size: 9px;
+  color: rgba(200, 220, 255, 0.4);
+  margin-top: 6px;
+  letter-spacing: 1px;
+}

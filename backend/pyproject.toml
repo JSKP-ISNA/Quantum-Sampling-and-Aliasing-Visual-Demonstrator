@@ -1,7 +1,7 @@
 [project]
 name = "aliasingviz-backend"
-version = "1.0.0"
-description = "AliasingViz 3D - Signal Processing Backend"
+version = "2.0.0"
+description = "AliasingViz 3D - Signal Processing & Quantum Execution Backend"
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.110.0",
@@ -9,10 +9,16 @@ dependencies = [
     "numpy>=1.26.0",
     "scipy>=1.12.0",
     "websockets>=12.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
+quantum = [
+    "qiskit>=1.0.0",
+    "qiskit-aer>=0.14.0",
+]
 dev = [
     "ruff>=0.3.0",
     "pytest>=8.0.0",
+    "httpx>=0.27.0",
 ]

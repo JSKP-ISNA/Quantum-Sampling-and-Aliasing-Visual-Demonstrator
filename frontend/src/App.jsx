@@ -1,26 +1,30 @@
 import { useState, useCallback } from 'react';
-import { Leva } from 'leva';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import Scene from './components/Scene';
-import ControlPanel from './components/ControlPanel';
-import ErrorOverlay from './components/ErrorOverlay';
-import AIExplanation from './components/AIExplanation';
+import Sidebar from './components/layout/Sidebar';
 import BootSequence from './components/BootSequence';
-import QuantumHUD from './components/QuantumHUD';
+import DashboardPage from './pages/DashboardPage';
+import SignalLabPage from './pages/SignalLabPage';
+import QuantumLabPage from './pages/QuantumLabPage';
+import NyquistPage from './pages/NyquistPage';
+import StatusPage from './pages/StatusPage';
 import useAudio from './hooks/useAudio';
 import useWebSocket from './hooks/useWebSocket';
 import useQuantumState from './hooks/useQuantumState';
+import useQuantumJobs from './hooks/useQuantumJobs';
 import './App.css';
 
 /**
  * AliasingViz 3D – Root Application
- * Industry-level quantum signal processing showcase.
+ * Multi-page quantum signal processing showcase.
  */
 export default function App() {
   const { sendParams } = useWebSocket();
   useAudio();
   useQuantumState();
+  const { submitJob } = useQuantumJobs();
   const [booted, setBooted] = useState(false);
+  const location = useLocation();
 
   const handleBootComplete = useCallback(() => {
     setBooted(true);
@@ -39,78 +43,77 @@ export default function App() {
           className="app-main"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.2, ease: 'easeOut' }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
         >
-          {/* Branding Header */}
-          <header className="app-header">
-            <div className="logo-group">
-              <div className="logo-icon">◈</div>
-              <div className="logo-text">
-                <h1>AliasingViz<span className="accent">3D</span></h1>
-                <p className="subtitle">Quantum Signal Processing Lab</p>
-              </div>
-            </div>
-            <div className="header-right">
-              <div className="header-badge">
-                <span className="badge-dot" />
-                QUANTUM PROJECT
-              </div>
-            </div>
-          </header>
+          {/* Sidebar Navigation */}
+          <Sidebar />
 
-          {/* Legend */}
-          <div className="legend">
-            <div className="legend-title">SIGNAL LAYERS</div>
-            {[
-              { color: '#0affff', label: 'Original Signal' },
-              { color: '#00ff88', label: 'Reconstructed' },
-              { color: '#ff3322', label: 'Alias Ghost' },
-              { color: '#ffcc00', label: 'Sample Points' },
-            ].map((item) => (
-              <div className="legend-item" key={item.label}>
-                <span className="legend-dot" style={{ background: item.color, boxShadow: `0 0 6px ${item.color}40` }} />
-                {item.label}
-              </div>
-            ))}
-          </div>
-
-          {/* 3D Scene */}
-          <Scene />
-
-          {/* HUD Overlay */}
-          <QuantumHUD />
-
-          {/* Leva control panel */}
-          <Leva
-            collapsed={false}
-            oneLineLabels={false}
-            flat={false}
-            theme={{
-              sizes: { rootWidth: '280px', controlWidth: '150px' },
-              colors: {
-                elevation1: 'rgba(5, 5, 20, 0.88)',
-                elevation2: 'rgba(10, 10, 30, 0.88)',
-                elevation3: 'rgba(15, 15, 40, 0.9)',
-                accent1: '#0affff',
-                accent2: '#7b2fff',
-                accent3: '#ff2fff',
-                highlight1: 'rgba(255, 255, 255, 0.9)',
-                highlight2: 'rgba(200, 210, 230, 0.6)',
-                highlight3: 'rgba(150, 160, 180, 0.4)',
-              },
-              fontSizes: { root: '11px' },
-              fonts: { mono: "'JetBrains Mono', 'Fira Code', monospace" },
-            }}
-          />
-
-          {/* Controls logic */}
-          <ControlPanel sendParams={sendParams} />
-
-          {/* Overlays */}
-          <ErrorOverlay />
-          <AIExplanation />
+          {/* Page Content */}
+          <main className="app-content">
+            <AnimatePresence mode="wait">
+              <Routes location={location} key={location.pathname}>
+                <Route
+                  path="/"
+                  element={
+                    <PageWrapper>
+                      <DashboardPage sendParams={sendParams} submitQuantumJob={submitJob} />
+                    </PageWrapper>
+                  }
+                />
+                <Route
+                  path="/signal-lab"
+                  element={
+                    <PageWrapper>
+                      <SignalLabPage sendParams={sendParams} />
+                    </PageWrapper>
+                  }
+                />
+                <Route
+                  path="/quantum-lab"
+                  element={
+                    <PageWrapper>
+                      <QuantumLabPage submitQuantumJob={submitJob} />
+                    </PageWrapper>
+                  }
+                />
+                <Route
+                  path="/nyquist"
+                  element={
+                    <PageWrapper>
+                      <NyquistPage />
+                    </PageWrapper>
+                  }
+                />
+                <Route
+                  path="/status"
+                  element={
+                    <PageWrapper>
+                      <StatusPage />
+                    </PageWrapper>
+                  }
+                />
+              </Routes>
+            </AnimatePresence>
+          </main>
         </motion.div>
       )}
     </div>
+  );
+}
+
+/**
+ * Page transition wrapper
+ */
+function PageWrapper({ children }) {
+  return (
+    <motion.div
+      className="page-wrapper"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {children}
+    </motion.div>
   );
 }

@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  # ─── Backend (FastAPI) ──────────────────────────────────────
+  # ─── Backend (FastAPI + Quantum Engine) ───────────────────────
   backend:
     build: ./backend
     container_name: aliasingviz-backend
@@ -10,6 +10,14 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - CORS_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:8000
+      - QUANTUM_PROVIDER=local_classical
+      - QUANTUM_SHOTS=1024
+      - QUANTUM_NOISE_MODEL=ideal
+      - QUANTUM_NUM_QUBITS=4
+      - QUANTUM_CIRCUIT_TYPE=phase_estimation
+      - DB_PATH=/app/data/experiments.db
+    volumes:
+      - backend_data:/app/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -42,3 +50,4 @@ services:
 
 volumes:
   n8n_data:
+  backend_data:

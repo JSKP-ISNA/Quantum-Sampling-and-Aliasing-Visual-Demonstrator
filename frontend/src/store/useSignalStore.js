@@ -44,7 +44,7 @@ const useSignalStore = create((set, get) => ({
   connected: false,
   aiExplanation: '',
 
-  // ─── Quantum State ───────────────────────────────────────────
+  // ─── Legacy Quantum State (backward compat) ──────────────────
   quantumState: {
     bloch: { x: 0, y: 0, z: 1 },
     theta: 0,
@@ -55,6 +55,38 @@ const useSignalStore = create((set, get) => ({
     fidelity: 1,
     purity: 1,
   },
+
+  // ─── Quantum Engine State ────────────────────────────────────
+  quantumJobs: {},           // Map of job_id → { status, result }
+  activeJobId: null,         // Currently tracked job
+  availableBackends: [],     // From /api/quantum/backends
+
+  // Quantum execution settings
+  quantumBackend: 'local_classical',
+  quantumShots: 1024,
+  quantumNoiseModel: 'ideal',
+  quantumNumQubits: 4,
+  quantumCircuitType: 'phase_estimation',
+
+  // Latest quantum result metrics
+  quantumMetrics: {
+    counts: {},
+    probabilities: {},
+    expectationValues: {},
+    circuitDepth: 0,
+    gateCount: 0,
+    backendName: '',
+    executionTime: 0,
+    noiseModel: '',
+    fidelityEstimate: 0,
+    circuitType: '',
+    totalWorkflowTime: 0,
+    classicalComparison: null,
+  },
+
+  // Job UI state
+  quantumJobStatus: 'idle',  // idle | submitting | running | completed | failed
+  quantumJobError: null,
 
   // ─── UI State ────────────────────────────────────────────────
   booted: false,
@@ -107,6 +139,48 @@ const useSignalStore = create((set, get) => ({
   setAIExplanation: (explanation) => set({ aiExplanation: explanation }),
   setQuantumState: (quantumState) => set({ quantumState }),
   setBooted: (booted) => set({ booted }),
+
+  // ─── Quantum Engine Actions ──────────────────────────────────
+
+  setAvailableBackends: (backends) => set({ availableBackends: backends }),
+
+  setQuantumSettings: (settings) => set(settings),
+
+  setQuantumJobStatus: (status, jobId = null, error = null) =>
+    set({
+      quantumJobStatus: status,
+      activeJobId: jobId ?? undefined,
+      quantumJobError: error,
+    }),
+
+  setQuantumResult: (result) => {
+    const metadata = result.metadata || {};
+    set({
+      quantumJobStatus: 'completed',
+      quantumMetrics: {
+        counts: result.counts || {},
+        probabilities: result.probabilities || {},
+        expectationValues: result.expectation_values || {},
+        circuitDepth: metadata.circuit_depth || 0,
+        gateCount: metadata.gate_count || 0,
+        backendName: metadata.backend || '',
+        executionTime: metadata.execution_time_ms || 0,
+        noiseModel: metadata.noise_model || 'ideal',
+        fidelityEstimate: metadata.fidelity_estimate || 0,
+        circuitType: metadata.circuit_type || '',
+        totalWorkflowTime: metadata.total_workflow_time_ms || 0,
+        classicalComparison: result.classical_comparison || null,
+      },
+    });
+  },
+
+  updateJobStatus: (jobId, status) =>
+    set((state) => ({
+      quantumJobs: {
+        ...state.quantumJobs,
+        [jobId]: { ...state.quantumJobs[jobId], ...status },
+      },
+    })),
 }));
 
 export default useSignalStore;

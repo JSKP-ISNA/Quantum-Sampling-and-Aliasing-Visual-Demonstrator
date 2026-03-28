@@ -1,10 +1,12 @@
 import { motion } from 'framer-motion';
 import useSignalStore from '../store/useSignalStore';
+import ShotHistogram from './ShotHistogram';
+import QuantumMetrics from './QuantumMetrics';
 import './ErrorOverlay.css';
 
 /**
  * HUD-style monitoring dashboard with animated metrics,
- * quantum state data, circular gauges, and scanning line effects.
+ * quantum execution results, shot histograms, and comparison data.
  */
 export default function ErrorOverlay() {
   const error = useSignalStore((s) => s.error);
@@ -14,7 +16,8 @@ export default function ErrorOverlay() {
   const fs = useSignalStore((s) => s.fs);
   const nyquist = useSignalStore((s) => s.nyquist);
   const connected = useSignalStore((s) => s.connected);
-  const quantumState = useSignalStore((s) => s.quantumState);
+  const jobStatus = useSignalStore((s) => s.quantumJobStatus);
+  const jobError = useSignalStore((s) => s.quantumJobError);
 
   const snrNorm = Math.min(Math.max((error.snr || 0) / 50, 0), 1);
   const mseNorm = Math.min(Math.max(1 - (error.mse || 0) * 10, 0), 1);
@@ -32,7 +35,22 @@ export default function ErrorOverlay() {
         {connected ? 'QUANTUM LINK' : 'OFFLINE'}
       </div>
 
-      {/* Metrics Panel */}
+      {/* Quantum Job Status */}
+      {jobStatus !== 'idle' && (
+        <div className={`job-status-badge ${jobStatus}`}>
+          <span className={`job-dot ${jobStatus}`} />
+          {jobStatus === 'submitting' && 'SUBMITTING JOB...'}
+          {jobStatus === 'running' && 'EXECUTING CIRCUIT...'}
+          {jobStatus === 'completed' && '✓ EXECUTION COMPLETE'}
+          {jobStatus === 'failed' && '✗ JOB FAILED'}
+        </div>
+      )}
+
+      {jobStatus === 'failed' && jobError && (
+        <div className="job-error-msg">{jobError}</div>
+      )}
+
+      {/* Signal Metrics Panel */}
       <div className="metrics-panel">
         <div className="panel-header">
           <span className="panel-icon">◈</span>
@@ -102,53 +120,11 @@ export default function ErrorOverlay() {
         </div>
       </div>
 
-      {/* Quantum State Panel */}
-      <div className="quantum-panel">
-        <div className="panel-header">
-          <span className="panel-icon">⬡</span>
-          <h3>QUANTUM STATE</h3>
-        </div>
-        <div className="quantum-metrics">
-          <div className="quantum-metric">
-            <span className="q-label">COHERENCE</span>
-            <div className="q-bar-container">
-              <div
-                className="q-bar-fill coherence"
-                style={{ width: `${(quantumState.coherence || 0) * 100}%` }}
-              />
-            </div>
-            <span className="q-value">{quantumState.coherence?.toFixed(3)}</span>
-          </div>
-          <div className="quantum-metric">
-            <span className="q-label">ENTROPY</span>
-            <div className="q-bar-container">
-              <div
-                className="q-bar-fill entropy"
-                style={{ width: `${(quantumState.entropy || 0) * 100}%` }}
-              />
-            </div>
-            <span className="q-value">{quantumState.entropy?.toFixed(3)}</span>
-          </div>
-          <div className="quantum-metric">
-            <span className="q-label">PURITY</span>
-            <div className="q-bar-container">
-              <div
-                className="q-bar-fill purity"
-                style={{ width: `${(quantumState.purity || 0) * 100}%` }}
-              />
-            </div>
-            <span className="q-value">{quantumState.purity?.toFixed(3)}</span>
-          </div>
-          <div className="quantum-metric">
-            <span className="q-label">|α|²</span>
-            <span className="q-value mono">{quantumState.superposition?.alpha_sq?.toFixed(3)}</span>
-          </div>
-          <div className="quantum-metric">
-            <span className="q-label">|β|²</span>
-            <span className="q-value mono">{quantumState.superposition?.beta_sq?.toFixed(3)}</span>
-          </div>
-        </div>
-      </div>
+      {/* Quantum Shot Histogram */}
+      <ShotHistogram />
+
+      {/* Quantum Execution Metrics */}
+      <QuantumMetrics />
 
       {/* Alias Alert */}
       {aliased && (

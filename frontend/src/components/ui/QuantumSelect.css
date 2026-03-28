@@ -1,0 +1,60 @@
+.quantum-select {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quantum-select__label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.quantum-select__wrapper {
+  position: relative;
+}
+
+.quantum-select__input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: rgba(10, 10, 30, 0.8);
+  border: 1px solid rgba(10, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+  outline: none;
+}
+
+.quantum-select__input:hover {
+  border-color: var(--select-color, var(--neon-cyan));
+}
+
+.quantum-select__input:focus {
+  border-color: var(--select-color, var(--neon-cyan));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--select-color, var(--neon-cyan)) 20%, transparent);
+}
+
+.quantum-select__input option {
+  background: #0a0a1a;
+  color: var(--text-primary);
+  padding: 8px;
+}
+
+.quantum-select__chevron {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--select-color, var(--neon-cyan));
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0.6;
+}

@@ -1,0 +1,228 @@
+.status-page {
+  padding: var(--sp-lg);
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+}
+
+.status-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+}
+
+.status-page__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+}
+
+.last-checked {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+/* ── Grid ──────────────────────────── */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-md);
+  flex: 1;
+  min-height: 0;
+}
+
+.status-wide-card {
+  grid-column: 1 / -1;
+}
+
+/* ── Services List ─────────────────── */
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.service-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  transition: background var(--duration-fast) ease;
+}
+
+.service-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.service-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.service-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.service-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+}
+
+.service-value--online { color: var(--neon-green); }
+.service-value--offline { color: var(--neon-red); }
+.service-value--warning { color: var(--neon-amber); }
+.service-value--loading { color: var(--neon-purple); }
+
+/* ── Backends ──────────────────────── */
+.backends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.backend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(123, 47, 255, 0.03);
+  border: 1px solid rgba(123, 47, 255, 0.06);
+}
+
+.backend-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.backend-desc {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-left: auto;
+}
+
+.no-backends {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.no-backends p {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ── Connection Details ────────────── */
+.connection-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cd-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(10, 255, 255, 0.03);
+}
+
+.cd-row:last-child {
+  border-bottom: none;
+}
+
+.cd-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cd-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.cd-value--mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--neon-cyan);
+}
+
+.cd-value--good { color: var(--neon-green); font-weight: 600; }
+.cd-value--bad { color: var(--neon-red); font-weight: 600; }
+
+/* ── Last Execution ────────────────── */
+.last-execution-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.le-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(123, 47, 255, 0.03);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(123, 47, 255, 0.06);
+}
+
+.le-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.le-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--neon-purple);
+}
+
+/* ── Health JSON ───────────────────── */
+.health-json {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--neon-green);
+  background: rgba(10, 255, 136, 0.03);
+  border: 1px solid rgba(10, 255, 136, 0.06);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+  .last-execution-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

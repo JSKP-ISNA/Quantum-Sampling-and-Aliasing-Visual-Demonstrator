@@ -1,0 +1,218 @@
+.quantum-metrics {
+  background: rgba(5, 8, 22, 0.88);
+  border: 1px solid rgba(10, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  backdrop-filter: blur(12px);
+}
+
+.qm-section {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(10, 255, 255, 0.06);
+}
+
+.qm-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.qm-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.qm-icon {
+  color: #0affff;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.qm-section-header h3 {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: rgba(200, 220, 255, 0.6);
+  margin: 0;
+}
+
+.qm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 8px;
+}
+
+.qm-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.qm-item.wide {
+  grid-column: 1 / -1;
+}
+
+.qm-label {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: rgba(200, 220, 255, 0.5);
+}
+
+.qm-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: rgba(10, 255, 255, 0.9);
+}
+
+.qm-value.small {
+  font-size: 10px;
+}
+
+.qm-value small {
+  font-size: 8px;
+  color: rgba(200, 220, 255, 0.4);
+  margin-left: 1px;
+}
+
+/* Fidelity Bar */
+.fidelity-bar-container {
+  height: 8px;
+  background: rgba(10, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(10, 255, 255, 0.08);
+  margin: 4px 0;
+}
+
+.fidelity-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease-out;
+}
+
+.fidelity-bar-fill.good {
+  background: linear-gradient(90deg, #00ff88, #0affff);
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.fidelity-bar-fill.medium {
+  background: linear-gradient(90deg, #ffcc00, #ff9900);
+  box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+}
+
+.fidelity-bar-fill.poor {
+  background: linear-gradient(90deg, #ff3322, #ff6644);
+  box-shadow: 0 0 10px rgba(255, 51, 34, 0.3);
+}
+
+.fidelity-value {
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(10, 255, 255, 0.8);
+}
+
+/* Expectation Values */
+.ev-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ev-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1px 0;
+}
+
+.ev-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: rgba(200, 220, 255, 0.6);
+}
+
+.ev-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+.ev-value.positive {
+  color: #00ff88;
+}
+
+.ev-value.negative {
+  color: #ff6644;
+}
+
+/* Comparison Section */
+.qm-section.comparison {
+  background: rgba(10, 255, 255, 0.02);
+  border-radius: 6px;
+  padding: 8px;
+  margin: 0 -4px;
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 10px;
+  margin-bottom: 6px;
+}
+
+.comparison-grid:last-child {
+  margin-bottom: 0;
+}
+
+.comp-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.comp-item.wide {
+  grid-column: 1 / -1;
+}
+
+.comp-label {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: rgba(200, 220, 255, 0.45);
+}
+
+.comp-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: rgba(200, 220, 255, 0.75);
+}
+
+.comp-value.quantum {
+  color: #0affff;
+}
+
+.comp-value.classical {
+  color: #7b2fff;
+}
+
+.comp-value.good {
+  color: #00ff88;
+}
+
+.comp-value.warning {
+  color: #ff6644;
+}
+
+/* Footer */
+.qm-footer {
+  text-align: center;
+  font-size: 9px;
+  color: rgba(200, 220, 255, 0.35);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 6px;
+  letter-spacing: 1px;
+}

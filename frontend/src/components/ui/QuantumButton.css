@@ -1,0 +1,119 @@
+.quantum-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all var(--duration-base) var(--ease-out-expo);
+}
+
+/* Sizes */
+.quantum-btn--sm { padding: 6px 14px; font-size: 10px; }
+.quantum-btn--md { padding: 10px 20px; font-size: 11px; }
+.quantum-btn--lg { padding: 14px 28px; font-size: 12px; }
+.quantum-btn--full { width: 100%; }
+
+/* Variants */
+.quantum-btn--cyan {
+  background: linear-gradient(135deg, rgba(10, 255, 255, 0.12), rgba(10, 255, 255, 0.06));
+  color: var(--neon-cyan);
+  border: 1px solid rgba(10, 255, 255, 0.2);
+  box-shadow: 0 0 12px rgba(10, 255, 255, 0.08);
+}
+.quantum-btn--cyan:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(10, 255, 255, 0.2), rgba(10, 255, 255, 0.1));
+  box-shadow: 0 0 22px rgba(10, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.quantum-btn--purple {
+  background: linear-gradient(135deg, rgba(123, 47, 255, 0.12), rgba(123, 47, 255, 0.06));
+  color: var(--neon-purple);
+  border: 1px solid rgba(123, 47, 255, 0.2);
+  box-shadow: 0 0 12px rgba(123, 47, 255, 0.08);
+}
+.quantum-btn--purple:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(123, 47, 255, 0.2), rgba(123, 47, 255, 0.1));
+  box-shadow: 0 0 22px rgba(123, 47, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.quantum-btn--green {
+  background: linear-gradient(135deg, rgba(10, 255, 136, 0.12), rgba(10, 255, 136, 0.06));
+  color: var(--neon-green);
+  border: 1px solid rgba(10, 255, 136, 0.2);
+  box-shadow: 0 0 12px rgba(10, 255, 136, 0.08);
+}
+.quantum-btn--green:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(10, 255, 136, 0.2), rgba(10, 255, 136, 0.1));
+  box-shadow: 0 0 22px rgba(10, 255, 136, 0.18);
+  transform: translateY(-1px);
+}
+
+.quantum-btn--danger {
+  background: linear-gradient(135deg, rgba(255, 51, 34, 0.12), rgba(255, 51, 34, 0.06));
+  color: var(--neon-red);
+  border: 1px solid rgba(255, 51, 34, 0.2);
+  box-shadow: 0 0 12px rgba(255, 51, 34, 0.08);
+}
+.quantum-btn--danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 51, 34, 0.2), rgba(255, 51, 34, 0.1));
+  box-shadow: 0 0 22px rgba(255, 51, 34, 0.18);
+  transform: translateY(-1px);
+}
+
+/* Disabled */
+.quantum-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.3);
+}
+
+/* Ripple */
+.quantum-btn__ripple {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  animation: btnRipple 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes btnRipple {
+  to {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+/* Spinner */
+.quantum-btn__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: btnSpin 0.8s linear infinite;
+}
+
+@keyframes btnSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Icon */
+.quantum-btn__icon {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}

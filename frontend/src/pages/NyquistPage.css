@@ -1,0 +1,178 @@
+.nyquist-page {
+  padding: var(--sp-lg);
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+}
+
+.nyquist-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* ── Grid Layout ───────────────────── */
+.nyquist-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: var(--sp-lg);
+  flex: 1;
+  min-height: 0;
+}
+
+.nyquist-controls-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.nyquist-viz-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.nyquist-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+/* ── Key Metrics ───────────────────── */
+.nyquist-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nm-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.nm-item--alert {
+  padding: 6px 8px;
+  background: rgba(255, 51, 34, 0.04);
+  border: 1px solid rgba(255, 51, 34, 0.1);
+  border-radius: var(--radius-sm);
+}
+
+.nm-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.nm-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--neon-cyan);
+}
+
+.nm-good { color: var(--neon-green); }
+.nm-bad { color: var(--neon-red); }
+
+/* ── Status Banner ─────────────────── */
+.nyquist-status-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.nyquist-status-banner.satisfied {
+  background: rgba(10, 255, 136, 0.04);
+  border: 1px solid rgba(10, 255, 136, 0.12);
+  color: var(--neon-green);
+}
+
+.nyquist-status-banner.aliased {
+  background: rgba(255, 51, 34, 0.04);
+  border: 1px solid rgba(255, 51, 34, 0.15);
+  color: var(--neon-red);
+  animation: glow 2s ease-in-out infinite;
+}
+
+.nsb-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* ── Education Card ────────────────── */
+.education-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.education-quote {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.7;
+  color: rgba(200, 210, 230, 0.7);
+  padding: 12px 16px;
+  border-left: 2px solid rgba(123, 47, 255, 0.4);
+  background: rgba(123, 47, 255, 0.03);
+  border-radius: 0 6px 6px 0;
+}
+
+.education-formula {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--neon-cyan);
+  padding: 16px;
+  background: rgba(10, 255, 255, 0.03);
+  border: 1px solid rgba(10, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  text-shadow: 0 0 20px rgba(10, 255, 255, 0.3);
+}
+
+.education-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.edu-section h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.edu-section p {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.edu-section strong {
+  color: var(--text-secondary);
+}
+
+/* ── Chart Cards ───────────────────── */
+.nyquist-chart-card {
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .nyquist-grid {
+    grid-template-columns: 1fr;
+  }
+}

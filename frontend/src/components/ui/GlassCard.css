@@ -1,0 +1,96 @@
+.glass-card {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--duration-base) ease, box-shadow var(--duration-base) ease;
+}
+
+.glass-card:hover {
+  border-color: var(--glass-border-hover);
+}
+
+/* ── Variants ──────────────────────── */
+.glass-card--default .glass-card__glow { background: linear-gradient(90deg, transparent, rgba(10, 255, 255, 0.2), transparent); }
+.glass-card--purple  .glass-card__glow { background: linear-gradient(90deg, transparent, rgba(123, 47, 255, 0.25), transparent); }
+.glass-card--purple { border-color: rgba(123, 47, 255, 0.1); }
+.glass-card--purple:hover { border-color: rgba(123, 47, 255, 0.2); }
+.glass-card--danger  .glass-card__glow { background: linear-gradient(90deg, transparent, rgba(255, 51, 34, 0.25), transparent); }
+.glass-card--danger { border-color: rgba(255, 51, 34, 0.1); }
+.glass-card--success .glass-card__glow { background: linear-gradient(90deg, transparent, rgba(10, 255, 136, 0.25), transparent); }
+.glass-card--success { border-color: rgba(10, 255, 136, 0.1); }
+
+/* ── Top Glow Line ─────────────────── */
+.glass-card__glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* ── Scanline ──────────────────────── */
+.glass-card__scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(10, 255, 255, 0.08), transparent);
+  animation: scanline 5s linear infinite;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ── Header ────────────────────────── */
+.glass-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(10, 255, 255, 0.04);
+}
+
+.glass-card__icon {
+  font-size: 14px;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px rgba(10, 255, 255, 0.4);
+  line-height: 1;
+}
+
+.glass-card--purple .glass-card__icon {
+  color: var(--neon-purple);
+  text-shadow: 0 0 10px rgba(123, 47, 255, 0.4);
+}
+
+.glass-card--danger .glass-card__icon {
+  color: var(--neon-red);
+  text-shadow: 0 0 10px rgba(255, 51, 34, 0.4);
+}
+
+.glass-card--success .glass-card__icon {
+  color: var(--neon-green);
+  text-shadow: 0 0 10px rgba(10, 255, 136, 0.4);
+}
+
+.glass-card__title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(10, 255, 255, 0.7);
+  margin: 0;
+}
+
+.glass-card--purple .glass-card__title { color: rgba(123, 47, 255, 0.7); }
+.glass-card--danger .glass-card__title { color: rgba(255, 51, 34, 0.7); }
+.glass-card--success .glass-card__title { color: rgba(10, 255, 136, 0.7); }
+
+/* ── Body ──────────────────────────── */
+.glass-card__body {
+  padding: 14px 16px;
+}

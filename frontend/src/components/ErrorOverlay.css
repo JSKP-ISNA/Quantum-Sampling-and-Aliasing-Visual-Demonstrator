@@ -1,6 +1,6 @@
 .error-overlay {
   position: fixed;
-  top: 56px;
+  top: 60px;
   right: 16px;
   display: flex;
   flex-direction: column;
@@ -59,6 +59,76 @@
 @keyframes dotPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.3; transform: scale(0.7); }
+}
+
+/* ─── Quantum Job Status Badge ────────────────────── */
+.job-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  width: fit-content;
+  align-self: flex-end;
+  backdrop-filter: blur(16px);
+}
+
+.job-status-badge.submitting,
+.job-status-badge.running {
+  background: rgba(123, 47, 255, 0.08);
+  border: 1px solid rgba(123, 47, 255, 0.2);
+  color: #a855f7;
+}
+
+.job-status-badge.completed {
+  background: rgba(10, 255, 136, 0.08);
+  border: 1px solid rgba(10, 255, 136, 0.2);
+  color: #00ff88;
+}
+
+.job-status-badge.failed {
+  background: rgba(255, 60, 60, 0.08);
+  border: 1px solid rgba(255, 60, 60, 0.2);
+  color: #ff4444;
+}
+
+.job-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: dotPulse 1.5s ease-in-out infinite;
+}
+
+.job-dot.submitting,
+.job-dot.running {
+  background: #a855f7;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+}
+
+.job-dot.completed {
+  background: #00ff88;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+  animation: none;
+}
+
+.job-dot.failed {
+  background: #ff4444;
+  box-shadow: 0 0 8px rgba(255, 68, 68, 0.6);
+  animation: none;
+}
+
+.job-error-msg {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: rgba(255, 80, 80, 0.7);
+  padding: 4px 10px;
+  text-align: right;
+  max-width: 260px;
+  word-break: break-word;
 }
 
 /* ─── Panel Shared Styles ─────────────────────────── */
