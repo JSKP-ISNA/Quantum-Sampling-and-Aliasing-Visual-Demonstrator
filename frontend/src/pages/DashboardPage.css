@@ -341,12 +341,28 @@
   inset: 0;
 }
 
+.dashboard-stage__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at center, rgba(120, 170, 255, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(5, 9, 15, 0.82), rgba(4, 7, 12, 0.96));
+  color: rgba(220, 229, 240, 0.74);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
 .dashboard-scene canvas {
   position: absolute !important;
   inset: 0;
   width: 100% !important;
   height: 100% !important;
-  filter: saturate(0.72) brightness(0.78) contrast(1.04);
+  filter: saturate(0.92) brightness(0.96) contrast(1.08);
 }
 
 .dashboard-stage__viewport::after {
@@ -354,8 +370,8 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(6, 10, 16, 0.56), rgba(6, 10, 16, 0.18) 28%, rgba(6, 10, 16, 0.52)),
-    linear-gradient(90deg, rgba(4, 7, 12, 0.48), transparent 16%, transparent 84%, rgba(4, 7, 12, 0.48));
+    linear-gradient(180deg, rgba(6, 10, 16, 0.42), rgba(6, 10, 16, 0.12) 28%, rgba(6, 10, 16, 0.36)),
+    linear-gradient(90deg, rgba(4, 7, 12, 0.34), transparent 16%, transparent 84%, rgba(4, 7, 12, 0.34));
   pointer-events: none;
 }
 
@@ -537,6 +553,7 @@
   border: 1px solid rgba(132, 154, 186, 0.12) !important;
   border-radius: 18px !important;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24) !important;
+  z-index: 320 !important;
 }
 
 @media (max-width: 1520px) {

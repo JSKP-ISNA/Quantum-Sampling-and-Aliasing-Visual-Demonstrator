@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion as Motion } from 'framer-motion';
 import {
   Area,
@@ -126,6 +126,7 @@ function SummaryCard({ label, value, note, tone = 'default' }) {
 }
 
 export default function SignalLabPage({ sendParams }) {
+  const setParams = useSignalStore((state) => state.setParams);
   const signalData = useSignalStore((state) => state.signalData);
   const sampledData = useSignalStore((state) => state.sampledData);
   const reconstructedData = useSignalStore((state) => state.reconstructedData);
@@ -145,6 +146,22 @@ export default function SignalLabPage({ sendParams }) {
   const [localNoise, setLocalNoise] = useState(noiseLevel || 0);
   const [localWave, setLocalWave] = useState(waveType || 'sine');
 
+  useEffect(() => {
+    setLocalFreq(freq || 100);
+  }, [freq]);
+
+  useEffect(() => {
+    setLocalFs(fs || 300);
+  }, [fs]);
+
+  useEffect(() => {
+    setLocalNoise(noiseLevel || 0);
+  }, [noiseLevel]);
+
+  useEffect(() => {
+    setLocalWave(waveType || 'sine');
+  }, [waveType]);
+
   const handleParamChange = (key, value) => {
     const next = {
       freq: key === 'freq' ? value : localFreq,
@@ -158,6 +175,12 @@ export default function SignalLabPage({ sendParams }) {
     if (key === 'noise_level') setLocalNoise(value);
     if (key === 'wave_type') setLocalWave(value);
 
+    setParams({
+      freq: next.freq,
+      fs: next.fs,
+      noiseLevel: next.noise_level,
+      waveType: next.wave_type,
+    });
     sendParams?.(next);
   };
 
@@ -166,6 +189,12 @@ export default function SignalLabPage({ sendParams }) {
     setLocalFs(scenario.params.fs);
     setLocalNoise(scenario.params.noise_level);
     setLocalWave(scenario.params.wave_type);
+    setParams({
+      freq: scenario.params.freq,
+      fs: scenario.params.fs,
+      noiseLevel: scenario.params.noise_level,
+      waveType: scenario.params.wave_type,
+    });
     sendParams?.(scenario.params);
   };
 
@@ -424,8 +453,8 @@ export default function SignalLabPage({ sendParams }) {
                   <stop offset="100%" stopColor="#d6bf9e" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="signalReconGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#8fa9bf" stopOpacity={0.24} />
-                  <stop offset="100%" stopColor="#8fa9bf" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#7df3cd" stopOpacity={0.34} />
+                  <stop offset="100%" stopColor="#7df3cd" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
@@ -449,9 +478,9 @@ export default function SignalLabPage({ sendParams }) {
               <Area
                 type="monotone"
                 dataKey="reconstructed"
-                stroke="#8fa9bf"
+                stroke="#7df3cd"
                 fill="url(#signalReconGradient)"
-                strokeWidth={1.8}
+                strokeWidth={2.2}
                 dot={false}
                 name="Reconstruction"
                 strokeDasharray="5 3"

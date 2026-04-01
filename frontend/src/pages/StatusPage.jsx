@@ -15,6 +15,7 @@ import AnimatedNumber from '../components/ui/AnimatedNumber';
 import GlassCard from '../components/ui/GlassCard';
 import QuantumButton from '../components/ui/QuantumButton';
 import StatusDot from '../components/ui/StatusDot';
+import { apiUrl } from '../lib/network';
 import useSignalStore from '../store/useSignalStore';
 import './StatusPage.css';
 
@@ -51,7 +52,7 @@ export default function StatusPage() {
     setHealthError(null);
 
     try {
-      const response = await fetch('/health');
+      const response = await fetch(apiUrl('/health'));
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }

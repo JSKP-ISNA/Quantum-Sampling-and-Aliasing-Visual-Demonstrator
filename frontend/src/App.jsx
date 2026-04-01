@@ -61,7 +61,7 @@ function WorkspaceShell({ location }) {
 
       <main className="app-content">
         <Suspense fallback={<RouteLoader variant="workspace" />}>
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="sync">
             <Routes location={location} key={location.pathname}>
               <Route
                 path="/dashboard"
