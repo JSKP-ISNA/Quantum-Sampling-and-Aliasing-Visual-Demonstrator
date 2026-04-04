@@ -1,14 +1,63 @@
 .quantum-workbench {
+  position: relative;
   height: 100%;
   overflow-y: auto;
+}
+
+.quantum-workbench__video-wrap {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  margin-bottom: -100vh;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.quantum-workbench__video,
+.quantum-workbench__scrim,
+.quantum-workbench__vignette,
+.quantum-workbench__grid {
+  position: absolute;
+  inset: 0;
+}
+
+.quantum-workbench__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.02);
+  filter: saturate(1.04) contrast(1.02) brightness(0.8);
+}
+
+.quantum-workbench__scrim {
+  background:
+    linear-gradient(180deg, rgba(4, 7, 10, 0.1) 0%, rgba(4, 7, 10, 0.22) 34%, rgba(4, 7, 10, 0.48) 100%),
+    linear-gradient(90deg, rgba(4, 7, 10, 0.24) 0%, rgba(4, 7, 10, 0.12) 42%, rgba(4, 7, 10, 0.22) 100%);
+}
+
+.quantum-workbench__vignette {
+  background:
+    radial-gradient(circle at 84% 16%, rgba(123, 47, 255, 0.14), transparent 26%),
+    radial-gradient(circle at 16% 22%, rgba(10, 255, 255, 0.12), transparent 28%),
+    radial-gradient(circle at 50% 100%, rgba(0, 0, 0, 0.18), transparent 40%);
+}
+
+.quantum-workbench__grid {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 140px 140px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.68), transparent 96%);
+}
+
+.quantum-workbench__content {
+  position: relative;
+  z-index: 1;
   padding: var(--sp-lg);
   display: flex;
   flex-direction: column;
   gap: var(--sp-lg);
-  background:
-    radial-gradient(circle at top right, rgba(123, 47, 255, 0.14), transparent 26%),
-    radial-gradient(circle at left center, rgba(10, 255, 255, 0.1), transparent 24%),
-    linear-gradient(180deg, rgba(3, 1, 8, 0.92), rgba(6, 6, 20, 0.98));
 }
 
 .quantum-workbench__hero {
@@ -17,11 +66,24 @@
   gap: var(--sp-lg);
   padding: var(--sp-lg);
   border-radius: var(--radius-xl);
-  border: 1px solid rgba(10, 255, 255, 0.08);
+  border: 1px solid rgba(143, 169, 191, 0.16);
   background:
-    linear-gradient(135deg, rgba(10, 255, 255, 0.05), rgba(123, 47, 255, 0.08)),
-    rgba(6, 6, 20, 0.72);
-  box-shadow: var(--shadow-lg);
+    linear-gradient(135deg, rgba(10, 255, 255, 0.05), rgba(123, 47, 255, 0.06)),
+    rgba(7, 12, 18, 0.38);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 24px 60px rgba(4, 8, 12, 0.22);
+}
+
+.quantum-workbench .glass-card {
+  border-color: rgba(143, 169, 191, 0.16);
+  background: rgba(7, 12, 18, 0.38);
+  box-shadow: 0 22px 56px rgba(4, 8, 12, 0.2);
+}
+
+.quantum-workbench .glass-card__header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
 }
 
 .quantum-workbench__hero-copy {
@@ -42,7 +104,8 @@
 .quantum-workbench__hero-copy .page-subtitle {
   max-width: 720px;
   line-height: 1.7;
-  color: rgba(214, 222, 246, 0.72);
+  color: rgba(214, 222, 246, 0.8);
+  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
 }
 
 .quantum-workbench__hero-metrics {
@@ -58,8 +121,10 @@
   gap: 12px;
   padding: 12px 14px;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(8, 9, 24, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(7, 12, 18, 0.36);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .quantum-workbench__metric-icon {
@@ -144,8 +209,8 @@
 }
 
 .quantum-workbench__ghost-btn {
-  border: 1px solid rgba(10, 255, 255, 0.1);
-  background: rgba(9, 12, 28, 0.8);
+  border: 1px solid rgba(143, 169, 191, 0.14);
+  background: rgba(7, 12, 18, 0.34);
   color: var(--text-secondary);
   border-radius: 12px;
   padding: 10px 12px;
@@ -217,9 +282,9 @@
 
 .quantum-workbench__palette-item {
   min-height: 72px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
-  background: rgba(9, 11, 28, 0.85);
+  background: rgba(7, 12, 18, 0.38);
   color: var(--text-primary);
   display: flex;
   flex-direction: column;
@@ -271,8 +336,8 @@
   gap: 6px;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid rgba(123, 47, 255, 0.12);
-  background: linear-gradient(135deg, rgba(123, 47, 255, 0.09), rgba(10, 255, 255, 0.04));
+  border: 1px solid rgba(143, 169, 191, 0.14);
+  background: linear-gradient(135deg, rgba(123, 47, 255, 0.08), rgba(10, 255, 255, 0.05)), rgba(7, 12, 18, 0.34);
   color: var(--text-primary);
   cursor: pointer;
   transition: transform var(--duration-fast) ease, border-color var(--duration-base) ease;
@@ -296,8 +361,8 @@
   display: inline-flex;
   padding: 4px;
   border-radius: 999px;
-  border: 1px solid rgba(10, 255, 255, 0.08);
-  background: rgba(4, 6, 18, 0.85);
+  border: 1px solid rgba(143, 169, 191, 0.12);
+  background: rgba(7, 12, 18, 0.38);
   gap: 4px;
   align-self: flex-start;
 }
@@ -325,8 +390,8 @@
   min-height: 220px;
   resize: vertical;
   border-radius: 16px;
-  border: 1px solid rgba(10, 255, 255, 0.08);
-  background: rgba(3, 4, 14, 0.92);
+  border: 1px solid rgba(143, 169, 191, 0.12);
+  background: rgba(7, 12, 18, 0.42);
   color: rgba(232, 237, 255, 0.9);
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
@@ -342,6 +407,12 @@
   color: rgba(255, 144, 136, 0.92);
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
+}
+
+.quantum-workbench__error--muted {
+  border-color: rgba(200, 160, 106, 0.14);
+  background: rgba(200, 160, 106, 0.06);
+  color: rgba(234, 221, 197, 0.86);
 }
 
 .quantum-workbench__canvas-tools {
@@ -373,10 +444,10 @@
 .quantum-workbench__canvas-shell {
   overflow: auto;
   border-radius: 18px;
-  border: 1px solid rgba(10, 255, 255, 0.08);
+  border: 1px solid rgba(143, 169, 191, 0.12);
   background:
     linear-gradient(180deg, rgba(10, 255, 255, 0.03), transparent 28%),
-    rgba(4, 6, 18, 0.86);
+    rgba(7, 12, 18, 0.44);
 }
 
 .quantum-workbench__canvas-grid {
@@ -401,7 +472,7 @@
   text-transform: uppercase;
   color: rgba(200, 210, 230, 0.45);
   border-bottom: 1px solid rgba(10, 255, 255, 0.06);
-  background: rgba(6, 8, 22, 0.96);
+  background: rgba(7, 12, 18, 0.68);
 }
 
 .quantum-workbench__canvas-corner {
@@ -421,7 +492,7 @@
   z-index: 2;
   padding: 14px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  background: rgba(6, 8, 22, 0.98);
+  background: rgba(7, 12, 18, 0.72);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -446,7 +517,7 @@
   border: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   border-left: 1px solid rgba(255, 255, 255, 0.03);
-  background: linear-gradient(180deg, rgba(12, 16, 36, 0.45), rgba(8, 10, 24, 0.9));
+  background: linear-gradient(180deg, rgba(16, 22, 34, 0.28), rgba(8, 12, 18, 0.58));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -458,7 +529,7 @@
 
 .quantum-workbench__cell:hover,
 .quantum-workbench__cell.is-hover {
-  background: linear-gradient(180deg, rgba(18, 22, 48, 0.82), rgba(8, 11, 24, 0.96));
+  background: linear-gradient(180deg, rgba(18, 28, 40, 0.48), rgba(8, 12, 18, 0.72));
 }
 
 .quantum-workbench__cell.is-armed-target {
@@ -658,8 +729,8 @@
 .quantum-workbench__remote-cell {
   padding: 12px;
   border-radius: 14px;
-  border: 1px solid rgba(123, 47, 255, 0.08);
-  background: rgba(8, 10, 26, 0.82);
+  border: 1px solid rgba(143, 169, 191, 0.12);
+  background: rgba(7, 12, 18, 0.34);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -742,8 +813,8 @@
 .quantum-workbench__telemetry-row {
   padding: 14px;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  background: rgba(6, 8, 20, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(7, 12, 18, 0.34);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -828,8 +899,8 @@
   gap: 12px;
   padding: 14px;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  background: rgba(8, 10, 24, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(7, 12, 18, 0.34);
 }
 
 .quantum-workbench__diagnostic-icon {
@@ -895,7 +966,7 @@
 }
 
 @media (max-width: 900px) {
-  .quantum-workbench {
+  .quantum-workbench__content {
     padding: var(--sp-md);
   }
 

@@ -35,6 +35,7 @@ import QuantumButton from '../ui/QuantumButton';
 import QuantumSelect from '../ui/QuantumSelect';
 import QuantumSlider from '../ui/QuantumSlider';
 import useSignalStore from '../../store/useSignalStore';
+import quantumLabVideo from '../../assets/quantum-lab-background.mp4';
 import {
   GATE_LIBRARY,
   PRESET_LIBRARY,
@@ -90,17 +91,42 @@ function buildBackendOptions(availableBackends) {
   if (Array.isArray(availableBackends) && availableBackends.length) {
     return availableBackends.map((backend) => {
       const value = typeof backend === 'string' ? backend : backend.name;
+      const isHardware = value === 'qiskit_hardware';
+      const available = typeof backend === 'string' ? true : backend.available !== false;
       return {
         value,
-        label: value,
+        label: typeof backend === 'string' ? value : backend.display_name || value,
+        disabled: !available,
+        description: !available
+          ? isHardware
+            ? 'IBM hardware is locked until an API token and qiskit-ibm-runtime are configured.'
+            : `${typeof backend === 'string' ? value : backend.display_name || value} is not available in this environment.`
+          : isHardware
+            ? 'Requires IBM Quantum credentials before real submissions can succeed.'
+            : typeof backend === 'string'
+              ? 'Backend reported by the API.'
+              : `${backend.max_qubits || 'Multiple'} qubits available with ${backend.noise_support ? '' : 'no '}noise support.`,
       };
     });
   }
 
   return [
-    { value: 'local_classical', label: 'local_classical' },
-    { value: 'qiskit_simulator', label: 'qiskit_simulator' },
-    { value: 'qiskit_hardware', label: 'qiskit_hardware' },
+    {
+      value: 'local_classical',
+      label: 'Local Classical Simulator',
+      description: 'Fast deterministic lane for local comparison and UI validation.',
+    },
+    {
+      value: 'qiskit_simulator',
+      label: 'Qiskit Aer Simulator',
+      description: 'Noise-aware simulator lane when the environment has Qiskit available.',
+    },
+    {
+      value: 'qiskit_hardware',
+      label: 'IBM Quantum Hardware',
+      disabled: true,
+      description: 'Locked until an API token and qiskit-ibm-runtime are configured.',
+    },
   ];
 }
 
@@ -233,9 +259,19 @@ export default function QuantumWorkbench({ submitQuantumJob }) {
   );
 
   const effectiveRemoteBackend = useMemo(() => {
-    if (backendOptions.some((option) => option.value === remoteBackend)) return remoteBackend;
-    return backendOptions[0]?.value || 'local_classical';
+    const matchingOption = backendOptions.find((option) => option.value === remoteBackend && !option.disabled);
+    if (matchingOption) return remoteBackend;
+    return backendOptions.find((option) => !option.disabled)?.value || 'local_classical';
   }, [backendOptions, remoteBackend]);
+
+  const remoteBackendOption = useMemo(
+    () => backendOptions.find((option) => option.value === effectiveRemoteBackend) || backendOptions[0] || null,
+    [backendOptions, effectiveRemoteBackend]
+  );
+  const lockedBackendNotes = useMemo(
+    () => backendOptions.filter((option) => option.disabled).map((option) => option.description).filter(Boolean),
+    [backendOptions]
+  );
 
   const exportedText = useMemo(
     () => serializeForMode(ioMode, workspace, simulation.qasm),
@@ -383,6 +419,15 @@ export default function QuantumWorkbench({ submitQuantumJob }) {
   }
 
   function handleRemoteRun() {
+    if (remoteBackendOption?.disabled) {
+      useSignalStore.getState().pushToast({
+        tone: 'warning',
+        title: 'Backend locked',
+        message: remoteBackendOption.description || 'This backend is not available in the current environment.',
+      });
+      return;
+    }
+
     useSignalStore.getState().setQuantumSettings({
       quantumBackend: effectiveRemoteBackend,
       quantumCircuitType: remoteWorkflow,
@@ -402,6 +447,16 @@ export default function QuantumWorkbench({ submitQuantumJob }) {
 
   return (
     <div className="quantum-workbench">
+      <div className="quantum-workbench__video-wrap" aria-hidden="true">
+        <video className="quantum-workbench__video" autoPlay loop muted playsInline preload="metadata">
+          <source src={quantumLabVideo} type="video/mp4" />
+        </video>
+        <div className="quantum-workbench__scrim" />
+        <div className="quantum-workbench__vignette" />
+        <div className="quantum-workbench__grid" />
+      </div>
+
+      <div className="quantum-workbench__content">
       <section className="quantum-workbench__hero">
         <div className="quantum-workbench__hero-copy">
           <span className="quantum-workbench__eyebrow">Frontend Quantum Workbench</span>
@@ -604,6 +659,8 @@ export default function QuantumWorkbench({ submitQuantumJob }) {
           <RemoteBenchmarkCard
             backendOptions={backendOptions}
             remoteBackend={effectiveRemoteBackend}
+            remoteBackendDescription={remoteBackendOption?.description || ''}
+            lockedBackendNotes={lockedBackendNotes}
             remoteWorkflow={remoteWorkflow}
             onBackendChange={setRemoteBackend}
             onWorkflowChange={setRemoteWorkflow}
@@ -650,6 +707,7 @@ export default function QuantumWorkbench({ submitQuantumJob }) {
             <DiagnosticsList diagnostics={simulation.diagnostics} />
           </GlassCard>
         </section>
+      </div>
       </div>
     </div>
   );
@@ -1054,6 +1112,8 @@ function IoWorkbench({
 function RemoteBenchmarkCard({
   backendOptions,
   remoteBackend,
+  remoteBackendDescription,
+  lockedBackendNotes,
   remoteWorkflow,
   onBackendChange,
   onWorkflowChange,
@@ -1082,6 +1142,7 @@ function RemoteBenchmarkCard({
           value={remoteBackend}
           onChange={onBackendChange}
           options={backendOptions}
+          hint={remoteBackendDescription}
           color="var(--neon-cyan)"
         />
         <QuantumSelect
@@ -1092,6 +1153,12 @@ function RemoteBenchmarkCard({
           color="var(--neon-purple)"
         />
       </div>
+
+      {lockedBackendNotes.length ? (
+        <div className="quantum-workbench__error quantum-workbench__error--muted">
+          {lockedBackendNotes[0]}
+        </div>
+      ) : null}
 
       <div className="quantum-workbench__remote-status">
         <span className={`quantum-workbench__status-pill status-${jobStatus}`}>

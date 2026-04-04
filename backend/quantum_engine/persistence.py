@@ -168,6 +168,15 @@ class ExperimentStore:
         finally:
             conn.close()
 
+    def count_experiments(self) -> int:
+        """Return the total number of persisted experiments."""
+        conn = sqlite3.connect(self._db_path)
+        try:
+            row = conn.execute("SELECT COUNT(*) FROM experiments").fetchone()
+            return int(row[0] if row else 0)
+        finally:
+            conn.close()
+
     def _row_to_dict(self, row: sqlite3.Row) -> dict:
         """Convert a database row to a dictionary with parsed JSON fields."""
         d = dict(row)

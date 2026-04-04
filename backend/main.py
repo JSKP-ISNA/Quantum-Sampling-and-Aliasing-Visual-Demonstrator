@@ -312,7 +312,8 @@ async def get_job_result(job_id: str):
 async def list_experiments(limit: int = 50, offset: int = 0):
     """List saved quantum experiments."""
     experiments = experiment_store.list_experiments(limit=limit, offset=offset)
-    return {"experiments": experiments, "total": len(experiments)}
+    total = experiment_store.count_experiments()
+    return {"experiments": experiments, "total": total}
 
 
 @app.get("/api/quantum/experiments/{exp_id}")

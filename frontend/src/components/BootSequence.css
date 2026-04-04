@@ -2,11 +2,13 @@
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: #030108;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background:
+    radial-gradient(circle at top, rgba(200, 160, 106, 0.08), transparent 32%),
+    linear-gradient(180deg, rgba(10, 15, 21, 0.98), rgba(8, 12, 18, 1));
 }
 
 .boot-overlay::before {
@@ -14,142 +16,153 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 30% 50%, rgba(10, 255, 255, 0.04) 0%, transparent 60%),
-    radial-gradient(ellipse at 70% 30%, rgba(123, 47, 255, 0.04) 0%, transparent 60%);
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 120px 120px;
+  opacity: 0.7;
 }
 
 .boot-container {
   position: relative;
   z-index: 1;
+  width: min(560px, calc(100% - 32px));
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 32px;
-  max-width: 600px;
-  width: 90%;
+  gap: 24px;
 }
 
 .boot-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   text-align: center;
 }
 
 .boot-logo-icon {
-  font-size: 48px;
-  color: #0affff;
-  text-shadow: 0 0 30px rgba(10, 255, 255, 0.5);
-  animation: bootPulse 2s ease-in-out infinite;
-  margin-bottom: 12px;
-}
-
-@keyframes bootPulse {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
+  width: 72px;
+  height: 72px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+  border: 1px solid rgba(200, 160, 106, 0.22);
+  background:
+    linear-gradient(135deg, rgba(200, 160, 106, 0.32), rgba(143, 169, 191, 0.16)),
+    rgba(255, 255, 255, 0.04);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
 }
 
 .boot-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 36px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.95);
-  letter-spacing: -1px;
-}
-
-.boot-accent {
-  background: linear-gradient(135deg, #0affff, #7b2fff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-left: 4px;
-  font-weight: 800;
+  font-size: clamp(32px, 5vw, 42px);
+  letter-spacing: -0.06em;
 }
 
 .boot-subtitle {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 4px;
-  color: rgba(10, 255, 255, 0.4);
-  margin-top: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(205, 214, 224, 0.68);
 }
 
 .boot-terminal {
-  width: 100%;
-  background: rgba(10, 255, 255, 0.03);
-  border: 1px solid rgba(10, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 16px 20px;
+  padding: 18px 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(143, 169, 191, 0.12);
+  background: rgba(14, 21, 29, 0.88);
+  box-shadow: 0 24px 60px rgba(4, 8, 12, 0.24);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.8;
-  max-height: 300px;
-  overflow: hidden;
 }
 
 .boot-line {
-  color: rgba(10, 255, 255, 0.6);
-}
-
-.boot-line:last-of-type {
-  color: rgba(10, 255, 255, 0.9);
+  color: rgba(223, 232, 227, 0.78);
 }
 
 .boot-cursor {
   display: inline-block;
-  color: #0affff;
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  margin-top: 6px;
+  color: rgba(214, 191, 158, 0.92);
+  animation: bootBlink 0.8s step-end infinite;
 }
 
 .boot-progress-container {
-  width: 100%;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .boot-progress-bar {
   flex: 1;
-  height: 3px;
-  background: rgba(10, 255, 255, 0.1);
-  border-radius: 2px;
+  height: 6px;
   overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .boot-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #0affff, #7b2fff);
-  border-radius: 2px;
-  box-shadow: 0 0 12px rgba(10, 255, 255, 0.4);
-  transition: width 0.1s linear;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(214, 191, 158, 0.96), rgba(143, 169, 191, 0.88));
 }
 
 .boot-progress-text {
+  min-width: 42px;
+  text-align: right;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  font-weight: 600;
-  color: rgba(10, 255, 255, 0.5);
-  min-width: 40px;
-  text-align: right;
+  color: rgba(205, 214, 224, 0.68);
 }
 
 .boot-scanline {
   position: absolute;
-  top: 0;
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(10, 255, 255, 0.15), transparent);
-  animation: scanDown 2.5s linear infinite;
+  background: linear-gradient(90deg, transparent, rgba(214, 191, 158, 0.22), transparent);
+  animation: bootScan 2.4s linear infinite;
   pointer-events: none;
 }
 
-@keyframes scanDown {
-  0% { top: 0; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
+@keyframes bootBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes bootScan {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+
+  12%,
+  88% {
+    opacity: 1;
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .boot-container {
+    width: calc(100% - 20px);
+  }
+
+  .boot-terminal {
+    padding: 16px;
+    border-radius: 18px;
+  }
 }

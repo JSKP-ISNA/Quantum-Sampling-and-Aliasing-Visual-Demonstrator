@@ -4,6 +4,7 @@ import {
   FiActivity,
   FiClock,
   FiCpu,
+  FiDatabase,
   FiGrid,
   FiMonitor,
   FiRefreshCw,
@@ -16,6 +17,7 @@ import GlassCard from '../components/ui/GlassCard';
 import QuantumButton from '../components/ui/QuantumButton';
 import StatusDot from '../components/ui/StatusDot';
 import useSignalStore from '../store/useSignalStore';
+import { apiUrl } from '../lib/network';
 import './StatusPage.css';
 
 function toneForHealth(healthData, healthError) {
@@ -27,6 +29,15 @@ function toneForHealth(healthData, healthError) {
 function formatTime(dateValue) {
   if (!dateValue) return 'Not checked yet';
   return new Date(dateValue).toLocaleTimeString();
+}
+
+function formatDateTime(dateValue) {
+  if (!dateValue) return 'Pending';
+  return new Date(dateValue).toLocaleString();
+}
+
+function topStateFromExperiment(experiment) {
+  return experiment?.result_summary?.top_state || 'n/a';
 }
 
 export default function StatusPage() {
@@ -43,6 +54,10 @@ export default function StatusPage() {
   const [healthError, setHealthError] = useState(null);
   const [healthLoading, setHealthLoading] = useState(false);
   const [lastChecked, setLastChecked] = useState(null);
+  const [experiments, setExperiments] = useState([]);
+  const [experimentTotal, setExperimentTotal] = useState(0);
+  const [experimentsLoading, setExperimentsLoading] = useState(false);
+  const [experimentsError, setExperimentsError] = useState(null);
 
   const desktopRuntime = typeof window !== 'undefined' ? window.desktopRuntime || null : null;
 
@@ -51,7 +66,7 @@ export default function StatusPage() {
     setHealthError(null);
 
     try {
-      const response = await fetch('/health');
+      const response = await fetch(apiUrl('/health'));
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
@@ -66,11 +81,43 @@ export default function StatusPage() {
     }
   }, []);
 
+  const fetchExperiments = useCallback(async () => {
+    setExperimentsLoading(true);
+    setExperimentsError(null);
+
+    try {
+      const response = await fetch(apiUrl('/api/quantum/experiments?limit=10'));
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      setExperiments(data.experiments || []);
+      setExperimentTotal(data.total || 0);
+    } catch (error) {
+      setExperimentsError(error.message || 'Experiment history is unavailable.');
+    } finally {
+      setExperimentsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     checkHealth();
-    const interval = window.setInterval(checkHealth, 30000);
+    fetchExperiments();
+
+    const interval = window.setInterval(() => {
+      checkHealth();
+      fetchExperiments();
+    }, 30000);
+
     return () => window.clearInterval(interval);
-  }, [checkHealth]);
+  }, [checkHealth, fetchExperiments]);
+
+  useEffect(() => {
+    if (jobStatus === 'completed') {
+      fetchExperiments();
+    }
+  }, [fetchExperiments, jobStatus]);
 
   const topCountEntry = useMemo(() => {
     const entries = Object.entries(metrics.counts || {});
@@ -110,8 +157,15 @@ export default function StatusPage() {
         tone: jobStatus === 'completed' || jobStatus === 'idle' ? 'good' : jobStatus === 'failed' ? 'critical' : 'warning',
         icon: <FiCpu />,
       },
+      {
+        label: 'Stored Runs',
+        value: String(experimentTotal),
+        note: experiments.length ? `Showing the latest ${experiments.length}` : 'No experiments recorded yet',
+        tone: experimentTotal ? 'good' : 'warning',
+        icon: <FiDatabase />,
+      },
     ];
-  }, [connected, desktopRuntime?.mode, desktopRuntime?.platform, healthData, healthError, jobStatus]);
+  }, [connected, desktopRuntime?.mode, desktopRuntime?.platform, experimentTotal, experiments.length, healthData, healthError, jobStatus]);
 
   const runbookChecks = useMemo(() => {
     return [
@@ -131,21 +185,21 @@ export default function StatusPage() {
         detail: availableBackends.length ? `${availableBackends.length} backends reported` : 'No backends returned yet',
       },
       {
-        label: 'Last execution result',
-        status: metrics.backendName ? 'online' : 'warning',
-        detail: metrics.backendName ? `${metrics.backendName} completed a recent run` : 'No completed quantum run recorded',
+        label: 'Experiment history available',
+        status: experimentsError ? 'offline' : experiments.length ? 'online' : 'warning',
+        detail: experimentsError || (experiments.length ? `${experimentTotal} runs persisted in SQLite` : 'No completed runs have been stored yet'),
       },
     ];
-  }, [availableBackends.length, connected, healthData?.service, healthData?.status, healthError, metrics.backendName]);
+  }, [availableBackends.length, connected, experimentTotal, experiments.length, experimentsError, healthData?.service, healthData?.status, healthError]);
 
   const endpointCards = useMemo(() => {
     return [
       { label: '/health', summary: 'Backend heartbeat and engine config', tone: healthData?.status === 'ok' ? 'good' : 'warning' },
       { label: '/stream', summary: 'Realtime signal transport lane', tone: connected ? 'good' : 'critical' },
       { label: '/api/quantum/backends', summary: 'Backend capability inventory', tone: availableBackends.length ? 'good' : 'warning' },
-      { label: '/api/quantum/submit', summary: 'Async quantum execution entrypoint', tone: jobStatus === 'failed' ? 'critical' : 'good' },
+      { label: '/api/quantum/experiments', summary: 'Persistent experiment history from SQLite', tone: experimentsError ? 'critical' : 'good' },
     ];
-  }, [availableBackends.length, connected, healthData?.status, jobStatus]);
+  }, [availableBackends.length, connected, experimentsError, healthData?.status]);
 
   const backendProvider = healthData?.quantum_engine?.provider || 'Unavailable';
   const backendNoiseModel = healthData?.quantum_engine?.noise_model || 'Unavailable';
@@ -158,8 +212,8 @@ export default function StatusPage() {
           <div className="status-page__eyebrow">Operations and runtime posture</div>
           <h1 className="page-title">Status Center</h1>
           <p className="page-subtitle">
-            Infrastructure view for runtime mode, transport health, backend capability, and the latest
-            execution posture across the app.
+            Infrastructure view for runtime mode, transport health, backend capability, and persisted
+            execution history across the product.
           </p>
         </div>
 
@@ -167,8 +221,11 @@ export default function StatusPage() {
           <QuantumButton
             variant="cyan"
             size="sm"
-            onClick={checkHealth}
-            loading={healthLoading}
+            onClick={() => {
+              checkHealth();
+              fetchExperiments();
+            }}
+            loading={healthLoading || experimentsLoading}
             icon={<FiRefreshCw />}
           >
             Refresh status
@@ -280,7 +337,11 @@ export default function StatusPage() {
               {availableBackends.length ? (
                 availableBackends.map((backend) => {
                   const name = typeof backend === 'string' ? backend : backend.name;
-                  const description = typeof backend === 'string' ? 'Backend reported by the API' : backend.description;
+                  const description =
+                    typeof backend === 'string'
+                      ? 'Backend reported by the API'
+                      : backend.display_name || backend.description || 'Backend reported by the API';
+                  const status = typeof backend === 'string' || backend.available !== false ? 'online' : 'warning';
 
                   return (
                     <div key={name} className="status-backend-list__item">
@@ -288,7 +349,7 @@ export default function StatusPage() {
                         <strong>{name}</strong>
                         <span>{description}</span>
                       </div>
-                      <StatusDot status="online" size={8} />
+                      <StatusDot status={status} size={8} />
                     </div>
                   );
                 })
@@ -333,6 +394,44 @@ export default function StatusPage() {
                 <strong>{topCountEntry[0] ? `|${topCountEntry[0]}>` : 'n/a'}</strong>
               </div>
             </div>
+          </GlassCard>
+
+          <GlassCard title="Recent Experiments" icon={<FiDatabase />} className="status-card">
+            <div className="status-history__summary">
+              <span>Persistent SQLite run history</span>
+              <strong>{experimentTotal} total</strong>
+            </div>
+
+            {experimentsError ? (
+              <div className="status-history__empty">{experimentsError}</div>
+            ) : experiments.length ? (
+              <div className="status-history">
+                {experiments.map((experiment) => (
+                  <div key={experiment.id} className="status-history__row">
+                    <div>
+                      <strong>{experiment.circuit_type}</strong>
+                      <span>{formatDateTime(experiment.created_at)}</span>
+                    </div>
+                    <div>
+                      <strong>{experiment.backend_name}</strong>
+                      <span>{experiment.noise_model}</span>
+                    </div>
+                    <div>
+                      <strong>{topStateFromExperiment(experiment)}</strong>
+                      <span>top state</span>
+                    </div>
+                    <div>
+                      <strong>{((experiment.fidelity || 0) * 100).toFixed(1)}%</strong>
+                      <span>fidelity</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="status-history__empty">
+                {experimentsLoading ? 'Loading experiment history...' : 'No completed quantum runs have been stored yet.'}
+              </div>
+            )}
           </GlassCard>
 
           <GlassCard title="Raw Health Response" icon={<FiServer />} variant="success" className="status-card">

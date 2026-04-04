@@ -1,11 +1,21 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion as Motion } from 'framer-motion';
+import {
+  FiAlertTriangle,
+  FiBell,
+  FiCheckCircle,
+  FiInfo,
+  FiX,
+} from 'react-icons/fi';
 import Sidebar from './components/layout/Sidebar';
+import BootSequence from './components/BootSequence';
+import RouteErrorBoundary from './components/RouteErrorBoundary';
 import useAudio from './hooks/useAudio';
 import useWebSocket from './hooks/useWebSocket';
 import useQuantumState from './hooks/useQuantumState';
 import useQuantumJobs from './hooks/useQuantumJobs';
+import useSignalStore from './store/useSignalStore';
 import './App.css';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -18,6 +28,8 @@ const StatusPage = lazy(() => import('./pages/StatusPage'));
 export default function App() {
   const location = useLocation();
   const isMarketingRoute = location.pathname === '/';
+  const toasts = useSignalStore((state) => state.toasts);
+  const dismissToast = useSignalStore((state) => state.dismissToast);
 
   return (
     <div className={`app-container ${isMarketingRoute ? 'app-container--marketing' : 'app-container--workspace'}`}>
@@ -32,22 +44,47 @@ export default function App() {
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           >
             <Suspense fallback={<RouteLoader />}>
-              <LandingPage />
+              <RouteErrorBoundary routeName="Front Page" resetKey={location.pathname}>
+                <LandingPage />
+              </RouteErrorBoundary>
             </Suspense>
           </Motion.div>
         ) : (
           <WorkspaceShell key="workspace" location={location} />
         )}
       </AnimatePresence>
+
+      <ToastViewport toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }
 
 function WorkspaceShell({ location }) {
   const { sendParams } = useWebSocket();
+  const { submitJob } = useQuantumJobs();
+  const booted = useSignalStore((state) => state.booted);
+  const setBooted = useSignalStore((state) => state.setBooted);
+
   useAudio();
   useQuantumState();
-  const { submitJob } = useQuantumJobs();
+
+  const shouldShowBoot =
+    !booted &&
+    typeof window !== 'undefined' &&
+    window.sessionStorage.getItem('quantum-workspace-booted') !== 'true';
+
+  useEffect(() => {
+    if (!booted && !shouldShowBoot) {
+      setBooted(true);
+    }
+  }, [booted, setBooted, shouldShowBoot]);
+
+  const completeBoot = () => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('quantum-workspace-booted', 'true');
+    }
+    setBooted(true);
+  };
 
   return (
     <Motion.div
@@ -57,6 +94,7 @@ function WorkspaceShell({ location }) {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
+      {shouldShowBoot ? <BootSequence onComplete={completeBoot} /> : null}
       <Sidebar />
 
       <main className="app-content">
@@ -66,41 +104,41 @@ function WorkspaceShell({ location }) {
               <Route
                 path="/dashboard"
                 element={
-                  <PageWrapper>
+                  <RouteFrame routeName="Dashboard" resetKey={location.pathname}>
                     <DashboardPage sendParams={sendParams} submitQuantumJob={submitJob} />
-                  </PageWrapper>
+                  </RouteFrame>
                 }
               />
               <Route
                 path="/signal-lab"
                 element={
-                  <PageWrapper>
+                  <RouteFrame routeName="Signal Lab" resetKey={location.pathname}>
                     <SignalLabPage sendParams={sendParams} />
-                  </PageWrapper>
+                  </RouteFrame>
                 }
               />
               <Route
                 path="/quantum-lab"
                 element={
-                  <PageWrapper>
+                  <RouteFrame routeName="Quantum Lab" resetKey={location.pathname}>
                     <QuantumLabPage submitQuantumJob={submitJob} />
-                  </PageWrapper>
+                  </RouteFrame>
                 }
               />
               <Route
                 path="/nyquist"
                 element={
-                  <PageWrapper>
+                  <RouteFrame routeName="Nyquist Explorer" resetKey={location.pathname}>
                     <NyquistPage />
-                  </PageWrapper>
+                  </RouteFrame>
                 }
               />
               <Route
                 path="/status"
                 element={
-                  <PageWrapper>
+                  <RouteFrame routeName="Status Center" resetKey={location.pathname}>
                     <StatusPage />
-                  </PageWrapper>
+                  </RouteFrame>
                 }
               />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -109,6 +147,14 @@ function WorkspaceShell({ location }) {
         </Suspense>
       </main>
     </Motion.div>
+  );
+}
+
+function RouteFrame({ routeName, resetKey, children }) {
+  return (
+    <RouteErrorBoundary routeName={routeName} resetKey={resetKey}>
+      <PageWrapper>{children}</PageWrapper>
+    </RouteErrorBoundary>
   );
 }
 
@@ -135,4 +181,50 @@ function RouteLoader({ variant = 'marketing' }) {
       </span>
     </div>
   );
+}
+
+function ToastViewport({ toasts, onDismiss }) {
+  return (
+    <div className="app-toast-stack" aria-live="polite" aria-atomic="true">
+      <AnimatePresence initial={false}>
+        {toasts.map((toast) => (
+          <ToastItem key={toast.id} toast={toast} onDismiss={onDismiss} />
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function ToastItem({ toast, onDismiss }) {
+  useEffect(() => {
+    const timeout = window.setTimeout(() => onDismiss(toast.id), toast.duration || 5000);
+    return () => window.clearTimeout(timeout);
+  }, [onDismiss, toast.duration, toast.id]);
+
+  return (
+    <Motion.div
+      className={`app-toast app-toast--${toast.tone || 'info'}`}
+      initial={{ opacity: 0, x: 24, y: 10 }}
+      animate={{ opacity: 1, x: 0, y: 0 }}
+      exit={{ opacity: 0, x: 24, y: -6 }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+      layout
+    >
+      <div className="app-toast__icon">{iconForToast(toast.tone)}</div>
+      <div className="app-toast__copy">
+        <strong>{toast.title || 'Notice'}</strong>
+        <span>{toast.message}</span>
+      </div>
+      <button type="button" className="app-toast__close" onClick={() => onDismiss(toast.id)} aria-label="Dismiss notification">
+        <FiX />
+      </button>
+    </Motion.div>
+  );
+}
+
+function iconForToast(tone) {
+  if (tone === 'success') return <FiCheckCircle />;
+  if (tone === 'warning') return <FiAlertTriangle />;
+  if (tone === 'danger') return <FiBell />;
+  return <FiInfo />;
 }

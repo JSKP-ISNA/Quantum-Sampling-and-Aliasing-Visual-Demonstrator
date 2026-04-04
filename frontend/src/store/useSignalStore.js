@@ -87,6 +87,7 @@ const useSignalStore = create((set, get) => ({
   // Job UI state
   quantumJobStatus: 'idle',  // idle | submitting | running | completed | failed
   quantumJobError: null,
+  toasts: [],
 
   // ─── UI State ────────────────────────────────────────────────
   booted: false,
@@ -139,6 +140,28 @@ const useSignalStore = create((set, get) => ({
   setAIExplanation: (explanation) => set({ aiExplanation: explanation }),
   setQuantumState: (quantumState) => set({ quantumState }),
   setBooted: (booted) => set({ booted }),
+  pushToast: (toast) => {
+    const id = toast.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    set((state) => ({
+      toasts: [
+        ...state.toasts,
+        {
+          id,
+          tone: 'info',
+          duration: 5000,
+          ...toast,
+        },
+      ],
+    }));
+
+    return id;
+  },
+  dismissToast: (id) =>
+    set((state) => ({
+      toasts: state.toasts.filter((toast) => toast.id !== id),
+    })),
+  clearToasts: () => set({ toasts: [] }),
 
   // ─── Quantum Engine Actions ──────────────────────────────────
 

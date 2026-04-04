@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { motion as Motion } from 'framer-motion';
 import {
   Area,
@@ -15,11 +15,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { FiActivity, FiCheckCircle, FiLayers, FiTarget, FiTrendingUp, FiZap } from 'react-icons/fi';
+import { FiActivity, FiCheckCircle, FiDownload, FiLayers, FiTarget, FiTrendingUp, FiZap } from 'react-icons/fi';
 import GlassCard from '../components/ui/GlassCard';
 import QuantumSelect from '../components/ui/QuantumSelect';
 import QuantumSlider from '../components/ui/QuantumSlider';
+import QuantumButton from '../components/ui/QuantumButton';
 import useSignalStore from '../store/useSignalStore';
+import signalLabVideo from '../assets/signal-lab-background.mp4';
 import './SignalLabPage.css';
 
 const QUICK_SCENARIOS = [
@@ -139,34 +141,65 @@ export default function SignalLabPage({ sendParams }) {
   const noiseLevel = useSignalStore((state) => state.noiseLevel);
   const waveType = useSignalStore((state) => state.waveType);
   const connected = useSignalStore((state) => state.connected);
-
-  const [localFreq, setLocalFreq] = useState(freq || 100);
-  const [localFs, setLocalFs] = useState(fs || 300);
-  const [localNoise, setLocalNoise] = useState(noiseLevel || 0);
-  const [localWave, setLocalWave] = useState(waveType || 'sine');
+  const setParams = useSignalStore((state) => state.setParams);
 
   const handleParamChange = (key, value) => {
     const next = {
-      freq: key === 'freq' ? value : localFreq,
-      fs: key === 'fs' ? value : localFs,
-      noise_level: key === 'noise_level' ? value : localNoise,
-      wave_type: key === 'wave_type' ? value : localWave,
+      freq: key === 'freq' ? value : freq,
+      fs: key === 'fs' ? value : fs,
+      noise_level: key === 'noise_level' ? value : noiseLevel,
+      wave_type: key === 'wave_type' ? value : waveType,
     };
 
-    if (key === 'freq') setLocalFreq(value);
-    if (key === 'fs') setLocalFs(value);
-    if (key === 'noise_level') setLocalNoise(value);
-    if (key === 'wave_type') setLocalWave(value);
+    setParams({
+      freq: next.freq,
+      fs: next.fs,
+      noiseLevel: next.noise_level,
+      waveType: next.wave_type,
+    });
 
     sendParams?.(next);
   };
 
   const applyScenario = (scenario) => {
-    setLocalFreq(scenario.params.freq);
-    setLocalFs(scenario.params.fs);
-    setLocalNoise(scenario.params.noise_level);
-    setLocalWave(scenario.params.wave_type);
+    setParams({
+      freq: scenario.params.freq,
+      fs: scenario.params.fs,
+      noiseLevel: scenario.params.noise_level,
+      waveType: scenario.params.wave_type,
+    });
     sendParams?.(scenario.params);
+  };
+
+  const exportRows = useMemo(() => {
+    const rowCount = Math.max(signalData.t?.length || 0, sampledData.t?.length || 0);
+    return Array.from({ length: rowCount }, (_, index) => ({
+      signal_t: signalData.t?.[index] ?? '',
+      signal_y: signalData.y?.[index] ?? '',
+      reconstructed_y: reconstructedData.y?.[index] ?? '',
+      sampled_t: sampledData.t?.[index] ?? '',
+      sampled_y: sampledData.y?.[index] ?? '',
+    }));
+  }, [reconstructedData.y, sampledData.t, sampledData.y, signalData.t, signalData.y]);
+
+  const exportCsv = () => {
+    const header = ['signal_t', 'signal_y', 'reconstructed_y', 'sampled_t', 'sampled_y'];
+    const csv = [
+      header.join(','),
+      ...exportRows.map((row) =>
+        header.map((key) => row[key]).join(',')
+      ),
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `signal-lab-${waveType}-${freq}hz-${fs}fs.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const timeDomainData = useMemo(() => {
@@ -249,6 +282,16 @@ export default function SignalLabPage({ sendParams }) {
 
   return (
     <div className="signal-lab-page">
+      <div className="signal-lab-page__video-wrap" aria-hidden="true">
+        <video className="signal-lab-page__video" autoPlay loop muted playsInline preload="metadata">
+          <source src={signalLabVideo} type="video/mp4" />
+        </video>
+        <div className="signal-lab-page__scrim" />
+        <div className="signal-lab-page__vignette" />
+        <div className="signal-lab-page__grid" />
+      </div>
+
+      <div className="signal-lab-page__content">
       <section className="signal-lab-page__header">
         <div>
           <div className="signal-lab-page__eyebrow">Signal acquisition surface</div>
@@ -260,6 +303,9 @@ export default function SignalLabPage({ sendParams }) {
         </div>
 
         <div className="signal-lab-page__stats">
+          <QuantumButton variant="cyan" size="sm" icon={<FiDownload />} onClick={exportCsv}>
+            Export CSV
+          </QuantumButton>
           <div className={`signal-stat-chip signal-stat-chip--${summary.tone}`}>
             <FiTarget />
             {aliased ? `Alias at ${formatNumber(aliasFreq, 1)} Hz` : `${formatNumber(summary.oversamplingRatio, 2)}x Nyquist`}
@@ -332,7 +378,7 @@ export default function SignalLabPage({ sendParams }) {
         <div className="signal-lab-controls__grid">
           <QuantumSlider
             label="Frequency"
-            value={localFreq}
+            value={freq}
             onChange={(value) => handleParamChange('freq', value)}
             min={1}
             max={500}
@@ -342,7 +388,7 @@ export default function SignalLabPage({ sendParams }) {
           />
           <QuantumSlider
             label="Sample Rate"
-            value={localFs}
+            value={fs}
             onChange={(value) => handleParamChange('fs', value)}
             min={10}
             max={1000}
@@ -352,7 +398,7 @@ export default function SignalLabPage({ sendParams }) {
           />
           <QuantumSlider
             label="Noise Level"
-            value={localNoise}
+            value={noiseLevel}
             onChange={(value) => handleParamChange('noise_level', value)}
             min={0}
             max={1}
@@ -361,7 +407,7 @@ export default function SignalLabPage({ sendParams }) {
           />
           <QuantumSelect
             label="Wave Type"
-            value={localWave}
+            value={waveType}
             onChange={(value) => handleParamChange('wave_type', value)}
             options={['sine', 'square', 'sawtooth', 'triangle']}
             color="var(--neon-purple)"
@@ -545,6 +591,7 @@ export default function SignalLabPage({ sendParams }) {
             </div>
           </div>
         </GlassCard>
+      </div>
       </div>
     </div>
   );
