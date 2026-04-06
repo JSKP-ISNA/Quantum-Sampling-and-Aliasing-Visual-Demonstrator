@@ -99,7 +99,8 @@ const useSignalStore = create((set, get) => ({
     const state = get();
 
     // Only create new object references for data that actually changed.
-    // This prevents unnecessary Three.js geometry rebuilds.
+    // This prevents unnecessary Three.js geometry rebuilds while still
+    // forcing a refresh when the control-plane parameters change.
     const update = {
       aliased: data.aliased,
       aliasFreq: data.alias_freq,
@@ -116,17 +117,28 @@ const useSignalStore = create((set, get) => ({
       update.waveType = data.params.wave_type ?? state.waveType;
     }
 
-    // Deep-compare data arrays to avoid unnecessary re-renders
-    if (dataChanged(state.signalData, data.signal)) {
+    const paramsChanged = Boolean(
+      data.params && (
+        data.params.freq !== state.freq ||
+        data.params.fs !== state.fs ||
+        (data.params.noise_level ?? state.noiseLevel) !== state.noiseLevel ||
+        (data.params.wave_type ?? state.waveType) !== state.waveType
+      )
+    );
+
+    // Deep-compare data arrays to avoid unnecessary re-renders.
+    // If the backend changed the waveform parameters, force the dependent
+    // datasets to refresh even when a few sampled sentinel values match.
+    if (paramsChanged || dataChanged(state.signalData, data.signal)) {
       update.signalData = data.signal;
     }
-    if (dataChanged(state.sampledData, data.sampled)) {
+    if (paramsChanged || dataChanged(state.sampledData, data.sampled)) {
       update.sampledData = data.sampled;
     }
-    if (dataChanged(state.reconstructedData, data.reconstructed)) {
+    if (paramsChanged || dataChanged(state.reconstructedData, data.reconstructed)) {
       update.reconstructedData = data.reconstructed;
     }
-    if (dataChanged(state.aliasGhostData, data.alias_ghost)) {
+    if (paramsChanged || dataChanged(state.aliasGhostData, data.alias_ghost)) {
       update.aliasGhostData = data.alias_ghost;
     }
 

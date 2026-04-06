@@ -128,6 +128,7 @@ function SummaryCard({ label, value, note, tone = 'default' }) {
 }
 
 export default function SignalLabPage({ sendParams }) {
+  const setParams = useSignalStore((state) => state.setParams);
   const signalData = useSignalStore((state) => state.signalData);
   const sampledData = useSignalStore((state) => state.sampledData);
   const reconstructedData = useSignalStore((state) => state.reconstructedData);
@@ -141,7 +142,7 @@ export default function SignalLabPage({ sendParams }) {
   const noiseLevel = useSignalStore((state) => state.noiseLevel);
   const waveType = useSignalStore((state) => state.waveType);
   const connected = useSignalStore((state) => state.connected);
-  const setParams = useSignalStore((state) => state.setParams);
+
 
   const handleParamChange = (key, value) => {
     const next = {
@@ -157,11 +158,11 @@ export default function SignalLabPage({ sendParams }) {
       noiseLevel: next.noise_level,
       waveType: next.wave_type,
     });
-
     sendParams?.(next);
   };
 
   const applyScenario = (scenario) => {
+
     setParams({
       freq: scenario.params.freq,
       fs: scenario.params.fs,
@@ -470,8 +471,8 @@ export default function SignalLabPage({ sendParams }) {
                   <stop offset="100%" stopColor="#d6bf9e" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="signalReconGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#8fa9bf" stopOpacity={0.24} />
-                  <stop offset="100%" stopColor="#8fa9bf" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#7df3cd" stopOpacity={0.34} />
+                  <stop offset="100%" stopColor="#7df3cd" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
@@ -495,9 +496,9 @@ export default function SignalLabPage({ sendParams }) {
               <Area
                 type="monotone"
                 dataKey="reconstructed"
-                stroke="#8fa9bf"
+                stroke="#7df3cd"
                 fill="url(#signalReconGradient)"
-                strokeWidth={1.8}
+                strokeWidth={2.2}
                 dot={false}
                 name="Reconstruction"
                 strokeDasharray="5 3"

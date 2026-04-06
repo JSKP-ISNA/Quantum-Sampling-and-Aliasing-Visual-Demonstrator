@@ -17,8 +17,8 @@ export default function ReconstructionWave() {
         transparent: true,
         uniforms: {
           uTime: { value: 0 },
-          uColor: { value: new THREE.Color('#00ff88') },
-          uGlow: { value: new THREE.Color('#0a4a2a') },
+          uColor: { value: new THREE.Color('#7df3cd') },
+          uGlow: { value: new THREE.Color('#1f7f67') },
         },
         vertexShader: `
         varying vec2 vUv;
@@ -45,9 +45,9 @@ export default function ReconstructionWave() {
           float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.5);
 
           vec3 color = mix(uGlow, uColor, flow * pulse);
-          color += fresnel * uColor * 0.4;
+          color += fresnel * uColor * 0.65;
 
-          float alpha = 0.75 + fresnel * 0.25;
+          float alpha = 0.86 + fresnel * 0.14;
           gl_FragColor = vec4(color, alpha);
         }
       `,
@@ -67,7 +67,7 @@ export default function ReconstructionWave() {
     if (points.length < 2) return null;
 
     const curve = new THREE.CatmullRomCurve3(points);
-    return new THREE.TubeGeometry(curve, points.length * 2, 0.035, 12, false);
+    return new THREE.TubeGeometry(curve, points.length * 2, 0.045, 14, false);
   }, [reconstructedData]);
 
   useFrame((state) => {

@@ -95,6 +95,8 @@ DEFAULT_PARAMS = {
     "wave_type": "sine",
 }
 
+NOISY_STREAM_INTERVAL_SECONDS = 0.2
+
 
 # ═══════════════════════════════════════════════════════════════════════
 #  CLASSICAL SIGNAL ENDPOINTS (backward compatible)
@@ -154,13 +156,17 @@ async def stream_signal(ws: WebSocket):
     Client sends parameter updates as JSON:
         {"freq": 150, "fs": 400, "noise_level": 0.1, "wave_type": "sine"}
 
-    Server continuously sends processed signal data back at ~30 FPS.
+    Server sends an initial frame immediately, then only pushes new frames
+    when parameters change. If noise is enabled, it streams at a modest rate
+    so the noisy reconstruction still feels alive without flooding the client.
     """
     await ws.accept()
     logger.info("WebSocket client connected")
 
     params = DEFAULT_PARAMS.copy()
     running = True
+    send_event = asyncio.Event()
+    send_event.set()
 
     async def receive_loop():
         nonlocal params, running
@@ -169,7 +175,10 @@ async def stream_signal(ws: WebSocket):
                 raw = await ws.receive_text()
                 try:
                     update = json.loads(raw)
-                    params = _validate_params(update, params)
+                    next_params = _validate_params(update, params)
+                    if next_params != params:
+                        params = next_params
+                        send_event.set()
                 except (json.JSONDecodeError, ValueError) as e:
                     logger.warning(f"Invalid parameter update: {e}")
         except WebSocketDisconnect:
@@ -181,9 +190,17 @@ async def stream_signal(ws: WebSocket):
         nonlocal running
         try:
             while running:
+                if params["noise_level"] > 0:
+                    try:
+                        await asyncio.wait_for(send_event.wait(), timeout=NOISY_STREAM_INTERVAL_SECONDS)
+                    except TimeoutError:
+                        pass
+                else:
+                    await send_event.wait()
+
+                send_event.clear()
                 result = process_signal(**params)
                 await ws.send_text(json.dumps(result))
-                await asyncio.sleep(1 / 30)
         except WebSocketDisconnect:
             running = False
         except Exception:
@@ -195,10 +212,6 @@ async def stream_signal(ws: WebSocket):
         logger.error(f"WebSocket error: {e}")
     finally:
         logger.info("WebSocket client disconnected")
-        try:
-            await ws.close()
-        except Exception:
-            pass
 
 
 # ═══════════════════════════════════════════════════════════════════════

@@ -1,17 +1,27 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { button, useControls } from 'leva';
+import { apiUrl } from '../lib/network';
 import useSignalStore from '../store/useSignalStore';
 
 /**
  * Leva-based control surface used on the dashboard route.
  * Sends parameter updates to the backend and mirrors settings into Zustand.
  */
-export default function ControlPanel({ sendParams, submitQuantumJob }) {
+export default function ControlPanel({ sendParams, submitQuantumJob, store }) {
   const setParams = useSignalStore((state) => state.setParams);
   const setAIExplanation = useSignalStore((state) => state.setAIExplanation);
   const setQuantumSettings = useSignalStore((state) => state.setQuantumSettings);
   const availableBackends = useSignalStore((state) => state.availableBackends);
   const jobStatus = useSignalStore((state) => state.quantumJobStatus);
+  const freq = useSignalStore((state) => state.freq);
+  const fs = useSignalStore((state) => state.fs);
+  const noiseLevel = useSignalStore((state) => state.noiseLevel);
+  const waveType = useSignalStore((state) => state.waveType);
+  const quantumBackend = useSignalStore((state) => state.quantumBackend);
+  const quantumCircuitType = useSignalStore((state) => state.quantumCircuitType);
+  const quantumShots = useSignalStore((state) => state.quantumShots);
+  const quantumNumQubits = useSignalStore((state) => state.quantumNumQubits);
+  const quantumNoiseModel = useSignalStore((state) => state.quantumNoiseModel);
   const prevParamsRef = useRef({});
 
   const backendOptions = useMemo(() => {
@@ -24,51 +34,93 @@ export default function ControlPanel({ sendParams, submitQuantumJob }) {
       .map((backend) => (typeof backend === 'string' ? backend : backend.name));
   }, [availableBackends]);
 
-  const params = useControls('Signal Controls', {
-    frequency: { value: 100, min: 1, max: 500, step: 1, label: 'Frequency (Hz)' },
-    sampleRate: { value: 300, min: 10, max: 1000, step: 5, label: 'Sample Rate (Hz)' },
-    noiseLevel: { value: 0, min: 0, max: 1, step: 0.01, label: 'Noise Level' },
-    waveType: {
-      value: 'sine',
-      options: ['sine', 'square', 'sawtooth', 'triangle'],
-      label: 'Waveform',
-    },
-  });
+  async function fetchExplanation() {
+    try {
+      const store = useSignalStore.getState();
+      const response = await fetch(apiUrl('/webhook/alias'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          freq: store.freq,
+          fs: store.fs,
+          aliased: store.aliased,
+          alias_freq: store.aliasFreq,
+        }),
+      });
 
-  const quantumParams = useControls('Quantum Execution', {
-    backend: {
-      value: 'local_classical',
-      options: backendOptions,
-      label: 'Backend',
-    },
-    circuitType: {
-      value: 'phase_estimation',
-      options: ['phase_estimation', 'quantum_sampling', 'qft'],
-      label: 'Workflow',
-    },
-    shots: { value: 1024, min: 128, max: 8192, step: 128, label: 'Shots' },
-    numQubits: { value: 4, min: 2, max: 8, step: 1, label: 'Qubits' },
-    noiseModel: {
-      value: 'ideal',
-      options: ['ideal', 'depolarizing', 'thermal'],
-      label: 'Noise Model',
-    },
-    runQuantumWorkflow: button(
-      () => {
-        submitQuantumJob?.();
-      },
-      { label: 'Run Quantum Workflow', disabled: jobStatus === 'running' || jobStatus === 'submitting' }
-    ),
-  });
+      const data = await response.json();
+      const intro = data.is_stub
+        ? 'Rule-based operator brief\nThis panel is powered by backend heuristics, not an LLM.\n'
+        : 'Operator brief\n';
 
-  useControls('Analysis Tools', {
-    generateAliasingBrief: button(
-      () => {
-        fetchExplanation();
+      setAIExplanation(`${intro}\n${data.explanation || 'No analysis was returned by the backend.'}`);
+    } catch {
+      setAIExplanation(
+        'Rule-based operator brief\nThis panel is powered by backend heuristics, not an LLM.\n\nCould not reach the backend analysis endpoint. Check that the server is running and try again.'
+      );
+    }
+  }
+
+  const [params] = useControls(
+    'Signal Controls',
+    () => ({
+      frequency: { value: freq, min: 1, max: 500, step: 1, label: 'Frequency (Hz)' },
+      sampleRate: { value: fs, min: 10, max: 1000, step: 5, label: 'Sample Rate (Hz)' },
+      noiseLevel: { value: noiseLevel, min: 0, max: 1, step: 0.01, label: 'Noise Level' },
+      waveType: {
+        value: waveType,
+        options: ['sine', 'square', 'sawtooth', 'triangle'],
+        label: 'Waveform',
       },
-      { label: 'Generate Operator Brief' }
-    ),
-  });
+    }),
+    { store },
+    [freq, fs, noiseLevel, waveType]
+  );
+
+  const [quantumParams] = useControls(
+    'Quantum Execution',
+    () => ({
+      backend: {
+        value: quantumBackend,
+        options: backendOptions,
+        label: 'Backend',
+      },
+      circuitType: {
+        value: quantumCircuitType,
+        options: ['phase_estimation', 'quantum_sampling', 'qft'],
+        label: 'Workflow',
+      },
+      shots: { value: quantumShots, min: 128, max: 8192, step: 128, label: 'Shots' },
+      numQubits: { value: quantumNumQubits, min: 2, max: 8, step: 1, label: 'Qubits' },
+      noiseModel: {
+        value: quantumNoiseModel,
+        options: ['ideal', 'depolarizing', 'thermal'],
+        label: 'Noise Model',
+      },
+      runQuantumWorkflow: button(
+        () => {
+          submitQuantumJob?.();
+        },
+        { label: 'Run Quantum Workflow', disabled: jobStatus === 'running' || jobStatus === 'submitting' }
+      ),
+    }),
+    { store },
+    [backendOptions.join('|'), jobStatus, quantumBackend, quantumCircuitType, quantumShots, quantumNumQubits, quantumNoiseModel]
+  );
+
+  useControls(
+    'Analysis Tools',
+    () => ({
+      generateAliasingBrief: button(
+        () => {
+          fetchExplanation();
+        },
+        { label: 'Generate Operator Brief' }
+      ),
+    }),
+    { store },
+    []
+  );
 
   useEffect(() => {
     const nextParams = {
@@ -106,32 +158,6 @@ export default function ControlPanel({ sendParams, submitQuantumJob }) {
     });
   }, [quantumParams, setQuantumSettings]);
 
-  const fetchExplanation = async () => {
-    try {
-      const store = useSignalStore.getState();
-      const response = await fetch('/webhook/alias', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          freq: store.freq,
-          fs: store.fs,
-          aliased: store.aliased,
-          alias_freq: store.aliasFreq,
-        }),
-      });
-
-      const data = await response.json();
-      const intro = data.is_stub
-        ? 'Rule-based operator brief\nThis panel is powered by backend heuristics, not an LLM.\n'
-        : 'Operator brief\n';
-
-      setAIExplanation(`${intro}\n${data.explanation || 'No analysis was returned by the backend.'}`);
-    } catch {
-      setAIExplanation(
-        'Rule-based operator brief\nThis panel is powered by backend heuristics, not an LLM.\n\nCould not reach the backend analysis endpoint. Check that the server is running and try again.'
-      );
-    }
-  };
 
   return null;
 }

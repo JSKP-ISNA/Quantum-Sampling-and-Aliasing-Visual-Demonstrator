@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Leva } from 'leva';
+import { Leva, useCreateStore } from 'leva';
 import {
   Bar,
   BarChart,
@@ -24,11 +24,12 @@ import {
   FiWifi,
   FiZap,
 } from 'react-icons/fi';
-import Scene from '../components/Scene';
-import ControlPanel from '../components/ControlPanel';
-import AIExplanation from '../components/AIExplanation';
 import useSignalStore from '../store/useSignalStore';
 import './DashboardPage.css';
+
+const Scene = lazy(() => import('../components/Scene'));
+const ControlPanel = lazy(() => import('../components/ControlPanel'));
+const AIExplanation = lazy(() => import('../components/AIExplanation'));
 
 const MAX_TIME_POINTS = 96;
 const MAX_SPECTRUM_BANDS = 18;
@@ -249,6 +250,9 @@ function ProgressRail({ label, value, detail }) {
 }
 
 export default function DashboardPage({ sendParams, submitQuantumJob }) {
+  const controlStore = useCreateStore();
+  const [stageReady, setStageReady] = useState(false);
+  const [controlsReady, setControlsReady] = useState(false);
   const freq = useSignalStore((state) => state.freq);
   const fs = useSignalStore((state) => state.fs);
   const noiseLevel = useSignalStore((state) => state.noiseLevel);
@@ -328,6 +332,40 @@ export default function DashboardPage({ sendParams, submitQuantumJob }) {
 
   const waveLabel = WAVE_TYPE_LABELS[waveType] || waveType;
   const executionTone = statusTone(quantumJobStatus);
+
+  useEffect(() => {
+    let disposed = false;
+    let idleHandle = null;
+    let controlsTimer = null;
+
+    const revealStage = () => {
+      if (!disposed) {
+        setStageReady(true);
+      }
+    };
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      idleHandle = window.requestIdleCallback(revealStage, { timeout: 250 });
+    } else {
+      idleHandle = window.setTimeout(revealStage, 80);
+    }
+
+    controlsTimer = window.setTimeout(() => {
+      if (!disposed) {
+        setControlsReady(true);
+      }
+    }, 120);
+
+    return () => {
+      disposed = true;
+      if (typeof window !== 'undefined' && 'cancelIdleCallback' in window && typeof idleHandle === 'number') {
+        window.cancelIdleCallback(idleHandle);
+      } else if (idleHandle) {
+        window.clearTimeout(idleHandle);
+      }
+      window.clearTimeout(controlsTimer);
+    };
+  }, []);
 
   return (
     <div className="dashboard-page">
@@ -424,7 +462,13 @@ export default function DashboardPage({ sendParams, submitQuantumJob }) {
 
               <div className="dashboard-stage__viewport">
                 <div className="dashboard-scene">
-                  <Scene />
+                  {stageReady ? (
+                    <Suspense fallback={<div className="dashboard-stage__loading">Loading 3D stage...</div>}>
+                      <Scene />
+                    </Suspense>
+                  ) : (
+                    <div className="dashboard-stage__loading">Preparing 3D stage...</div>
+                  )}
                 </div>
 
                 <div className="dashboard-stage__overlay dashboard-stage__overlay--top">
@@ -498,8 +542,8 @@ export default function DashboardPage({ sendParams, submitQuantumJob }) {
                     }}
                   />
                   <ReferenceLine y={0} stroke="rgba(255,255,255,0.12)" />
-                  <Line type="monotone" dataKey="source" stroke="#89c6ff" strokeWidth={2.2} dot={false} />
-                  <Line type="monotone" dataKey="reconstruction" stroke="#63d1b6" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="source" stroke="#8fd1ff" strokeWidth={2.4} dot={false} />
+                  <Line type="monotone" dataKey="reconstruction" stroke="#7df3cd" strokeWidth={2.6} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -592,33 +636,40 @@ export default function DashboardPage({ sendParams, submitQuantumJob }) {
           </DashboardPanel>
         </div>
 
-        <Leva
-          collapsed={false}
-          oneLineLabels={false}
-          flat={false}
-          theme={{
-            sizes: { rootWidth: '320px', controlWidth: '150px' },
-            colors: {
-              elevation1: 'rgba(12, 16, 24, 0.96)',
-              elevation2: 'rgba(16, 22, 32, 0.98)',
-              elevation3: 'rgba(20, 27, 40, 0.98)',
-              accent1: '#89c6ff',
-              accent2: '#63d1b6',
-              accent3: '#9ab0d0',
-              highlight1: '#f4f7fb',
-              highlight2: 'rgba(220, 228, 238, 0.72)',
-              highlight3: 'rgba(158, 171, 190, 0.5)',
-            },
-            fontSizes: { root: '11px' },
-            fonts: {
-              mono: "'JetBrains Mono', 'Fira Code', monospace",
-              body: "'Outfit', sans-serif",
-            },
-          }}
-        />
+        {controlsReady ? (
+          <>
+            <Leva
+              store={controlStore}
+              collapsed={false}
+              oneLineLabels={false}
+              flat={false}
+              theme={{
+                sizes: { rootWidth: '320px', controlWidth: '150px' },
+                colors: {
+                  elevation1: 'rgba(12, 16, 24, 0.96)',
+                  elevation2: 'rgba(16, 22, 32, 0.98)',
+                  elevation3: 'rgba(20, 27, 40, 0.98)',
+                  accent1: '#89c6ff',
+                  accent2: '#63d1b6',
+                  accent3: '#9ab0d0',
+                  highlight1: '#f4f7fb',
+                  highlight2: 'rgba(220, 228, 238, 0.72)',
+                  highlight3: 'rgba(158, 171, 190, 0.5)',
+                },
+                fontSizes: { root: '11px' },
+                fonts: {
+                  mono: "'JetBrains Mono', 'Fira Code', monospace",
+                  body: "'Outfit', sans-serif",
+                },
+              }}
+            />
 
-        <ControlPanel sendParams={sendParams} submitQuantumJob={submitQuantumJob} />
-        <AIExplanation />
+            <Suspense fallback={null}>
+              <ControlPanel store={controlStore} sendParams={sendParams} submitQuantumJob={submitQuantumJob} />
+              <AIExplanation />
+            </Suspense>
+          </>
+        ) : null}
       </div>
     </div>
   );
