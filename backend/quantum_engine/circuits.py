@@ -4,6 +4,11 @@ Quantum Engine – Circuit Construction
 Builds parameterized quantum circuits from high-level specifications.
 Provides both abstract CircuitSpec objects and concrete Qiskit QuantumCircuit
 objects when the Qiskit SDK is available.
+
+Supports windowed state preparation for QPE counting qubits to suppress
+spectral leakage ("quantum aliasing"), based on:
+  • "Effects of Cosine Tapering Window on QPE" (2021)
+  • "Programmable Signal Design for QPE via QSP" (2026)
 """
 
 from __future__ import annotations
@@ -16,6 +21,58 @@ import numpy as np
 from quantum_engine.models import CircuitSpec, CircuitType
 
 
+# ─── Windowed State Preparation ──────────────────────────────────────
+
+# Valid window types for QPE counting register initialization.
+VALID_WINDOW_TYPES = ("uniform", "cosine", "hann", "hamming")
+
+
+def build_windowed_state(
+    num_qubits: int,
+    window_type: str = "cosine",
+) -> np.ndarray:
+    """
+    Generate a normalized amplitude vector for the QPE counting register.
+
+    Instead of the standard uniform superposition (Hadamard on all qubits),
+    this prepares a state whose amplitudes follow a window function.
+    This suppresses spectral sidelobes in the QPE measurement distribution,
+    mitigating quantum aliasing.
+
+    Supported windows:
+        - "uniform"  : standard |+⟩^⊗n  (equivalent to Hadamard)
+        - "cosine"   : raised cosine (Hann) taper — best sidelobe suppression
+        - "hann"     : alias for cosine
+        - "hamming"  : Hamming window — slightly wider mainlobe, lower sidelobes
+
+    Returns a real-valued amplitude vector of length 2^num_qubits with unit norm.
+    """
+    N = 2**num_qubits
+
+    if window_type == "uniform":
+        return np.ones(N) / math.sqrt(N)
+
+    if window_type in ("cosine", "hann"):
+        # Hann / raised cosine:  w[k] = 0.5 * (1 - cos(2πk / (N-1)))
+        if N == 1:
+            return np.array([1.0])
+        w = 0.5 * (1.0 - np.cos(2.0 * np.pi * np.arange(N) / (N - 1)))
+    elif window_type == "hamming":
+        if N == 1:
+            return np.array([1.0])
+        w = 0.54 - 0.46 * np.cos(2.0 * np.pi * np.arange(N) / (N - 1))
+    else:
+        # Fallback to uniform for unknown types
+        return np.ones(N) / math.sqrt(N)
+
+    # Normalize to unit norm (amplitudes, not probabilities)
+    norm = np.linalg.norm(w)
+    if norm > 0:
+        w = w / norm
+
+    return w
+
+
 # ─── CircuitSpec Builders ────────────────────────────────────────────
 
 
@@ -23,18 +80,30 @@ def build_phase_estimation_spec(
     signal_freq: float,
     sample_rate: float,
     num_qubits: int = 4,
+    window_type: str = "uniform",
 ) -> CircuitSpec:
     """
     Create a CircuitSpec for Quantum Phase Estimation.
 
     The phase φ = freq/fs (mod 1) is the eigenvalue phase.
     QPE uses num_qubits counting qubits + 1 target qubit.
+
+    When window_type is not "uniform", the counting register is initialized
+    with a tapered window state instead of the standard Hadamard superposition.
+    This suppresses sidelobes in the measurement distribution.
     """
     phase = (signal_freq / sample_rate) % 1.0
     total_qubits = num_qubits + 1  # counting + target
 
-    depth = num_qubits * 3 + 2  # Hadamards + controlled rotations + inverse QFT
-    gate_count = num_qubits * 2 + num_qubits * (num_qubits - 1) // 2 + num_qubits
+    # Windowed state preparation adds depth for the initialize instruction
+    is_windowed = window_type != "uniform"
+    depth = num_qubits * 3 + 2 + (num_qubits if is_windowed else 0)
+    gate_count = (
+        num_qubits * 2
+        + num_qubits * (num_qubits - 1) // 2
+        + num_qubits
+        + (num_qubits * 2 if is_windowed else 0)
+    )
 
     return CircuitSpec(
         circuit_type=CircuitType.PHASE_ESTIMATION,
@@ -44,12 +113,13 @@ def build_phase_estimation_spec(
             "sample_rate": sample_rate,
             "phase": round(phase, 6),
             "counting_qubits": num_qubits,
+            "window_type": window_type,
         },
         depth=depth,
         gate_count=gate_count,
         description=(
             f"QPE circuit: φ={phase:.4f} (freq={signal_freq}Hz, fs={sample_rate}Hz), "
-            f"{num_qubits} counting qubits"
+            f"{num_qubits} counting qubits, window={window_type}"
         ),
     )
 
@@ -133,21 +203,29 @@ def build_qiskit_circuit(spec: CircuitSpec):
 
 
 def _build_qiskit_qpe(spec: CircuitSpec):
-    """Build a QPE circuit in Qiskit."""
+    """Build a QPE circuit in Qiskit, with optional windowed state preparation."""
     from qiskit import QuantumCircuit
 
     counting = spec.parameters.get("counting_qubits", spec.num_qubits - 1)
     total = counting + 1
     phase = spec.parameters.get("phase", 0.25)
+    window_type = spec.parameters.get("window_type", "uniform")
 
     qc = QuantumCircuit(total, counting)
 
     # Prepare target qubit in eigenstate |1⟩
     qc.x(total - 1)
 
-    # Hadamard on counting qubits
-    for i in range(counting):
-        qc.h(i)
+    # ── Counting register initialization ──
+    if window_type == "uniform":
+        # Standard QPE: Hadamard on counting qubits
+        for i in range(counting):
+            qc.h(i)
+    else:
+        # Windowed QPE: initialize counting qubits with tapered amplitudes.
+        # This replaces the Hadamard layer and suppresses spectral sidelobes.
+        window_amplitudes = build_windowed_state(counting, window_type)
+        qc.initialize(window_amplitudes.tolist(), list(range(counting)))
 
     # Controlled phase rotations
     for i in range(counting):

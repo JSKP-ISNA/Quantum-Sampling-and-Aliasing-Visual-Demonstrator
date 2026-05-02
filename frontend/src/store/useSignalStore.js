@@ -67,6 +67,7 @@ const useSignalStore = create((set, get) => ({
   quantumNoiseModel: 'ideal',
   quantumNumQubits: 4,
   quantumCircuitType: 'phase_estimation',
+  quantumWindowType: 'uniform',
 
   // Latest quantum result metrics
   quantumMetrics: {
@@ -80,6 +81,8 @@ const useSignalStore = create((set, get) => ({
     noiseModel: '',
     fidelityEstimate: 0,
     circuitType: '',
+    windowType: 'uniform',
+    pslrDb: 0,
     totalWorkflowTime: 0,
     classicalComparison: null,
   },
@@ -190,6 +193,7 @@ const useSignalStore = create((set, get) => ({
 
   setQuantumResult: (result) => {
     const metadata = result.metadata || {};
+    const comparison = result.classical_comparison || null;
     set({
       quantumJobStatus: 'completed',
       quantumMetrics: {
@@ -203,8 +207,10 @@ const useSignalStore = create((set, get) => ({
         noiseModel: metadata.noise_model || 'ideal',
         fidelityEstimate: metadata.fidelity_estimate || 0,
         circuitType: metadata.circuit_type || '',
+        windowType: metadata.window_type || 'uniform',
+        pslrDb: comparison?.pslr_db || 0,
         totalWorkflowTime: metadata.total_workflow_time_ms || 0,
-        classicalComparison: result.classical_comparison || null,
+        classicalComparison: comparison,
       },
     });
   },

@@ -43,6 +43,7 @@ def run_quantum_sampling_comparison(
     noise_config: NoiseConfig | None = None,
     num_qubits: int = 4,
     circuit_type: str = "phase_estimation",
+    window_type: str = "uniform",
 ) -> ExecutionResult:
     """
     Full hybrid classical-quantum workflow.
@@ -84,6 +85,7 @@ def run_quantum_sampling_comparison(
             signal_freq=freq,
             sample_rate=fs,
             num_qubits=num_qubits,
+            window_type=window_type,
         )
     elif circuit_type == "quantum_sampling":
         # Use sampled signal values as input to quantum sampling
@@ -131,6 +133,7 @@ def run_quantum_sampling_comparison(
         (time.time() - start_total) * 1000, 2
     )
     result.metadata["circuit_type"] = circuit_type
+    result.metadata["window_type"] = window_type
     result.metadata["signal_params"] = {
         "freq": freq,
         "fs": fs,
@@ -189,6 +192,14 @@ def _compute_comparison(
                 abs(estimated_freq - freq) < fs / (2**n_counting)
             )
 
+            # ── Peak-to-Sidelobe Ratio (PSLR) ──
+            # Measures how well the counting register's window function
+            # suppresses spectral leakage.  Higher PSLR = cleaner peak.
+            comparison["pslr_db"] = _compute_pslr(counts)
+            comparison["window_type"] = circuit_spec.parameters.get(
+                "window_type", "uniform"
+            )
+
     elif circuit_spec.circuit_type.value == "quantum_sampling":
         # Compare measurement distribution vs signal distribution
         probs = result.probabilities
@@ -234,3 +245,30 @@ def _kl_divergence(p: np.ndarray, q: np.ndarray) -> float:
     p = p / p.sum()
     q = q / q.sum()
     return float(np.sum(p * np.log(p / q)))
+
+
+def _compute_pslr(counts: dict[str, int]) -> float:
+    """
+    Compute Peak-to-Sidelobe Ratio (PSLR) in dB from measurement counts.
+
+    PSLR = 20 * log10(peak_count / next_highest_count)
+
+    A higher PSLR means better suppression of spectral leakage sidelobes.
+    Standard (uniform) QPE typically yields 5-8 dB.
+    Cosine-windowed QPE can achieve 15-30+ dB.
+
+    Returns 0.0 if there are fewer than 2 distinct outcomes.
+    """
+    if not counts or len(counts) < 2:
+        return 0.0
+
+    sorted_counts = sorted(counts.values(), reverse=True)
+    peak = sorted_counts[0]
+    sidelobe = sorted_counts[1]
+
+    if sidelobe <= 0:
+        return 60.0  # Effectively infinite suppression, cap at 60 dB
+
+    pslr = 20.0 * np.log10(peak / sidelobe)
+    return round(float(pslr), 2)
+

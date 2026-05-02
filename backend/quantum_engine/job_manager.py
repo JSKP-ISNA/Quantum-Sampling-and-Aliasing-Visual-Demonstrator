@@ -114,6 +114,7 @@ class JobManager:
         noise_config: NoiseConfig | None = None,
         num_qubits: int = 4,
         circuit_type: str = "phase_estimation",
+        window_type: str = "uniform",
     ) -> str:
         """
         Submit a quantum job for async execution.
@@ -145,6 +146,7 @@ class JobManager:
                 noise_config=noise_config,
                 num_qubits=num_qubits,
                 circuit_type=circuit_type,
+                window_type=window_type,
             )
         )
         self._tasks[job.id] = task
@@ -165,6 +167,7 @@ class JobManager:
         noise_config: NoiseConfig,
         num_qubits: int,
         circuit_type: str,
+        window_type: str = "uniform",
     ):
         """Background task that runs the quantum workflow with retry logic."""
         job = self._jobs.get(job_id)
@@ -191,6 +194,7 @@ class JobManager:
                         noise_config=noise_config,
                         num_qubits=num_qubits,
                         circuit_type=circuit_type,
+                        window_type=window_type,
                     ),
                     timeout=self._job_timeout,
                 )

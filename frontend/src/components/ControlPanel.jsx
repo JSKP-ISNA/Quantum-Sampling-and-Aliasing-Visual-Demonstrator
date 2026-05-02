@@ -22,6 +22,7 @@ export default function ControlPanel({ sendParams, submitQuantumJob, store }) {
   const quantumShots = useSignalStore((state) => state.quantumShots);
   const quantumNumQubits = useSignalStore((state) => state.quantumNumQubits);
   const quantumNoiseModel = useSignalStore((state) => state.quantumNoiseModel);
+  const quantumWindowType = useSignalStore((state) => state.quantumWindowType);
   const prevParamsRef = useRef({});
 
   const backendOptions = useMemo(() => {
@@ -97,6 +98,11 @@ export default function ControlPanel({ sendParams, submitQuantumJob, store }) {
         options: ['ideal', 'depolarizing', 'thermal'],
         label: 'Noise Model',
       },
+      windowType: {
+        value: quantumWindowType,
+        options: ['uniform', 'cosine', 'hamming'],
+        label: 'QPE Windowing',
+      },
       runQuantumWorkflow: button(
         () => {
           submitQuantumJob?.();
@@ -105,7 +111,7 @@ export default function ControlPanel({ sendParams, submitQuantumJob, store }) {
       ),
     }),
     { store },
-    [backendOptions.join('|'), jobStatus, quantumBackend, quantumCircuitType, quantumShots, quantumNumQubits, quantumNoiseModel]
+    [backendOptions.join('|'), jobStatus, quantumBackend, quantumCircuitType, quantumShots, quantumNumQubits, quantumNoiseModel, quantumWindowType]
   );
 
   useControls(
@@ -155,6 +161,7 @@ export default function ControlPanel({ sendParams, submitQuantumJob, store }) {
       quantumShots: quantumParams.shots,
       quantumNumQubits: quantumParams.numQubits,
       quantumNoiseModel: quantumParams.noiseModel,
+      quantumWindowType: quantumParams.windowType,
     });
   }, [quantumParams, setQuantumSettings]);
 

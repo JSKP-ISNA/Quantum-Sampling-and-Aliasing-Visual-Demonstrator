@@ -106,6 +106,41 @@ export default function QuantumMetrics() {
         </div>
       )}
 
+      {/* QPE Windowing & PSLR — Research Feature */}
+      {metrics.circuitType === 'phase_estimation' && metrics.pslrDb > 0 && (
+        <div className="qm-section windowing">
+          <div className="qm-section-header">
+            <span className="qm-icon">≋</span>
+            <h3>QPE WINDOWING</h3>
+          </div>
+          <div className="qm-grid">
+            <div className="qm-item">
+              <span className="qm-label">WINDOW</span>
+              <span className="qm-value small">{formatWindowType(metrics.windowType)}</span>
+            </div>
+            <div className="qm-item">
+              <span className="qm-label">PSLR</span>
+              <span className={`qm-value ${metrics.pslrDb > 15 ? 'pslr-excellent' : metrics.pslrDb > 8 ? 'pslr-good' : 'pslr-low'}`}>
+                {metrics.pslrDb.toFixed(1)}<small>dB</small>
+              </span>
+            </div>
+          </div>
+          <div className="pslr-bar-container">
+            <motion.div
+              className={`pslr-bar-fill ${metrics.pslrDb > 15 ? 'excellent' : metrics.pslrDb > 8 ? 'good' : 'low'}`}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min((metrics.pslrDb / 30) * 100, 100)}%` }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            />
+          </div>
+          <div className="pslr-note">
+            {metrics.windowType !== 'uniform'
+              ? 'Cosine taper suppresses spectral sidelobes (quantum aliasing mitigation).'
+              : 'Standard Hadamard superposition — switch to cosine windowing for better sidelobe suppression.'}
+          </div>
+        </div>
+      )}
+
       {/* Classical Comparison */}
       {comparison && (
         <div className="qm-section comparison">

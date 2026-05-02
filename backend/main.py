@@ -236,6 +236,7 @@ async def submit_quantum_job(
     noise_model: Optional[str] = None,
     num_qubits: Optional[int] = None,
     circuit_type: Optional[str] = None,
+    window_type: Optional[str] = None,
 ):
     """
     Submit a quantum job for asynchronous execution.
@@ -262,6 +263,7 @@ async def submit_quantum_job(
         noise_config=noise_cfg,
         num_qubits=num_qubits or config.default_num_qubits,
         circuit_type=circuit_type or config.default_circuit_type,
+        window_type=window_type or "uniform",
     )
 
     return {

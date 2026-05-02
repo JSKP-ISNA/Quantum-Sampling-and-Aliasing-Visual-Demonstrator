@@ -143,6 +143,7 @@ export default function useQuantumJobs() {
       noise_model: overrides.noiseModel || store.quantumNoiseModel,
       num_qubits: String(overrides.numQubits || store.quantumNumQubits),
       circuit_type: overrides.circuitType || store.quantumCircuitType,
+      window_type: overrides.windowType || store.quantumWindowType || 'uniform',
     });
 
     store.setQuantumJobStatus('submitting');
