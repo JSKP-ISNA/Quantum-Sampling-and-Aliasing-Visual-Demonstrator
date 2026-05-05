@@ -21,7 +21,6 @@ import QuantumSelect from '../components/ui/QuantumSelect';
 import QuantumSlider from '../components/ui/QuantumSlider';
 import QuantumButton from '../components/ui/QuantumButton';
 import useSignalStore from '../store/useSignalStore';
-import signalLabVideo from '../assets/signal-lab-background.mp4';
 import './SignalLabPage.css';
 
 const QUICK_SCENARIOS = [
@@ -283,10 +282,7 @@ export default function SignalLabPage({ sendParams }) {
 
   return (
     <div className="signal-lab-page">
-      <div className="signal-lab-page__video-wrap" aria-hidden="true">
-        <video className="signal-lab-page__video" autoPlay loop muted playsInline preload="metadata">
-          <source src={signalLabVideo} type="video/mp4" />
-        </video>
+      <div className="signal-lab-page__bg-wrap" aria-hidden="true">
         <div className="signal-lab-page__scrim" />
         <div className="signal-lab-page__vignette" />
         <div className="signal-lab-page__grid" />

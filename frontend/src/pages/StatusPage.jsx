@@ -18,7 +18,6 @@ import QuantumButton from '../components/ui/QuantumButton';
 import StatusDot from '../components/ui/StatusDot';
 import { apiUrl } from '../lib/network';
 import useSignalStore from '../store/useSignalStore';
-import { apiUrl } from '../lib/network';
 import './StatusPage.css';
 
 function toneForHealth(healthData, healthError) {

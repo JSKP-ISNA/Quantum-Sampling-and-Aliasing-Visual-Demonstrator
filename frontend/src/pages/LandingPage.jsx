@@ -3,102 +3,18 @@ import { motion as Motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
   FiArrowRight,
-  FiCheckCircle,
   FiCpu,
   FiLayers,
   FiMenu,
   FiRadio,
   FiServer,
-  FiShield,
   FiTrendingUp,
   FiX,
 } from 'react-icons/fi';
 import heroVideo from '../assets/landing-preview.mp4';
 import './LandingPage.css';
 
-const HERO_POINTS = [
-  'Signal Processing 8.5/10: the most trustworthy part of the system',
-  'Classical Infrastructure 7.5/10: WebSocket, job lifecycle, Docker, and persistence are solid',
-  'Quantum Authenticity 3/10 and Production Readiness 3/10: this is still a strong prototype, not a finished platform',
-];
 
-const PROJECT_SCORES = [
-  {
-    dimension: 'Signal Processing',
-    score: '8.5/10',
-    note: 'Genuinely good. This is the part of the project that feels closest to production quality.',
-    tone: 'strong',
-  },
-  {
-    dimension: 'Classical Infrastructure',
-    score: '7.5/10',
-    note: 'WebSocket streaming, job lifecycle, Docker, and persistence are all competent foundations.',
-    tone: 'strong',
-  },
-  {
-    dimension: 'Quantum Authenticity',
-    score: '3/10',
-    note: 'Results still mix analytical shortcuts and incompatible simulation stories, so this layer should be framed as experimental.',
-    tone: 'risk',
-  },
-  {
-    dimension: 'Frontend Architecture',
-    score: '5/10',
-    note: 'The interface is visually rich, but route composition, component size, and test coverage need real cleanup.',
-    tone: 'mixed',
-  },
-  {
-    dimension: 'UI/UX Polish',
-    score: '7/10',
-    note: 'The visual language is strong, but mobile responsiveness and accessibility are still missing.',
-    tone: 'strong',
-  },
-  {
-    dimension: 'Code Hygiene',
-    score: '5/10',
-    note: 'Repository cleanup, tracked artifacts, and naming consistency still need attention.',
-    tone: 'mixed',
-  },
-  {
-    dimension: 'Test Coverage',
-    score: '6.5/10',
-    note: 'Backend coverage is respectable, but the frontend still has no meaningful test safety net or CI.',
-    tone: 'mixed',
-  },
-  {
-    dimension: 'Production Readiness',
-    score: '3/10',
-    note: 'Auth, rate limiting, monitoring, mobile, accessibility, and recovery flows are not there yet.',
-    tone: 'risk',
-  },
-];
-
-const PRIORITIES = [
-  {
-    icon: FiCpu,
-    title: 'Fix Quantum Authenticity',
-    description:
-      'Stop presenting analytically derived or mismatched simulator outputs as if they are one coherent quantum runtime.',
-  },
-  {
-    icon: FiLayers,
-    title: 'Refactor The Frontend',
-    description:
-      'Break up oversized route components, clarify ownership between UI surfaces, and add real frontend tests.',
-  },
-  {
-    icon: FiShield,
-    title: 'Earn Production Claims',
-    description:
-      'Add auth, rate limiting, monitoring, mobile support, accessibility, and better error recovery before calling this production-ready.',
-  },
-  {
-    icon: FiServer,
-    title: 'Improve Delivery Discipline',
-    description:
-      'Clean up tracked artifacts, add CI, and expand docs so the stack is easier to trust and maintain.',
-  },
-];
 
 const MODULES = [
   {
@@ -144,9 +60,7 @@ const MODULES = [
 ];
 
 const NAV_SECTIONS = [
-  { id: 'scores', label: 'Scores' },
   { id: 'routes', label: 'Routes' },
-  { id: 'gaps', label: 'Gaps' },
 ];
 
 const REVEAL_TRANSITION = { duration: 0.7, ease: [0.16, 1, 0.3, 1] };
@@ -261,52 +175,8 @@ export default function LandingPage() {
                 Inspect quantum lab
               </Link>
             </div>
-
-            <div className="landing-hero__points" aria-label="Landing highlights">
-              {HERO_POINTS.map((item) => (
-                <div key={item} className="landing-hero__point">
-                  <FiCheckCircle />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
-          <div className="landing-hero__footnote">
-            <button type="button" className="landing-inline-link" onClick={() => scrollToSection('scores')}>
-              Review scores
-            </button>
-            <span>8.5 DSP / 7.5 infra / 3.0 quantum authenticity / 3.0 production readiness</span>
-          </div>
-        </RevealSection>
-
-        <RevealSection className="landing-section" id="scores">
-          <div className="landing-section__heading">
-            <span className="landing-kicker">Scorecard</span>
-            <h2>The project is strongest in DSP and infrastructure, weakest in quantum authenticity and production hardening.</h2>
-            <p>
-              These scores should shape how the app is presented. It deserves credit for the real work in the stack,
-              but it should not be marketed like a production platform or a fully authentic quantum system yet.
-            </p>
-          </div>
-
-          <div className="landing-card-grid landing-card-grid--scores">
-            {PROJECT_SCORES.map((item, index) => (
-              <Motion.div
-                key={item.dimension}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ ...REVEAL_TRANSITION, delay: index * 0.05 }}
-              >
-                <article className={`landing-score-card landing-score-card--${item.tone}`}>
-                  <span className="landing-score-card__dimension">{item.dimension}</span>
-                  <strong className="landing-score-card__score">{item.score}</strong>
-                  <p>{item.note}</p>
-                </article>
-              </Motion.div>
-            ))}
-          </div>
         </RevealSection>
 
         <RevealSection className="landing-section" id="routes">
@@ -341,34 +211,6 @@ export default function LandingPage() {
                   </span>
                 </Link>
               </Motion.div>
-            ))}
-          </div>
-        </RevealSection>
-
-        <RevealSection className="landing-section" id="gaps">
-          <div className="landing-section__heading">
-            <span className="landing-kicker">Gaps</span>
-            <h2>The next version should fix authenticity, architecture, and production fundamentals before chasing more shine.</h2>
-            <p>
-              The scorecard points to a clear roadmap: tighten the quantum story, refactor the frontend, clean up the
-              repo and delivery process, and add the missing fundamentals needed for a serious production claim.
-            </p>
-          </div>
-
-          <div className="landing-card-grid landing-card-grid--priorities">
-            {PRIORITIES.map((item, index) => (
-              <Motion.article
-                key={item.title}
-                className="landing-feature-card"
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ ...REVEAL_TRANSITION, delay: index * 0.08 }}
-              >
-                <div className="landing-feature-card__icon">{createElement(item.icon)}</div>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </Motion.article>
             ))}
           </div>
         </RevealSection>

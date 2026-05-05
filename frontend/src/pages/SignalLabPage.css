@@ -4,7 +4,7 @@
   overflow-y: auto;
 }
 
-.signal-lab-page__video-wrap {
+.signal-lab-page__bg-wrap {
   position: sticky;
   top: 0;
   height: 100vh;
@@ -12,22 +12,18 @@
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(200, 160, 106, 0.10), transparent 40%),
+    radial-gradient(ellipse at 80% 20%, rgba(143, 169, 191, 0.10), transparent 40%),
+    radial-gradient(ellipse at 50% 80%, rgba(99, 70, 180, 0.06), transparent 50%),
+    linear-gradient(180deg, #060a10 0%, #0a0e16 40%, #070b12 100%);
 }
 
-.signal-lab-page__video,
 .signal-lab-page__scrim,
 .signal-lab-page__vignette,
 .signal-lab-page__grid {
   position: absolute;
   inset: 0;
-}
-
-.signal-lab-page__video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scale(1.02);
-  filter: saturate(1.04) contrast(1.01) brightness(0.82);
 }
 
 .signal-lab-page__scrim {

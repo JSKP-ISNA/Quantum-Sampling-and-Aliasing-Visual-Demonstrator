@@ -490,7 +490,7 @@ export default function DashboardPage({ sendParams, submitQuantumJob }) {
                     <span><i className="tone-sample" /> Sample lattice</span>
                   </div>
                   <div className="dashboard-stage__caption">
-                    Camera orbit remains available. The stage is intentionally darkened so the simulation, not the glow, does the talking.
+                    Camera orbit remains available. The stage renders the live signal field, sampling lattice, and reconstruction geometry in real time.
                   </div>
                 </div>
               </div>

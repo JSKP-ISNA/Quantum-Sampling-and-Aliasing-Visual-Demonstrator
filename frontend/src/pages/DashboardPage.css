@@ -362,7 +362,6 @@
   inset: 0;
   width: 100% !important;
   height: 100% !important;
-  filter: saturate(0.92) brightness(0.96) contrast(1.08);
 }
 
 .dashboard-stage__viewport::after {
@@ -370,8 +369,8 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(6, 10, 16, 0.42), rgba(6, 10, 16, 0.12) 28%, rgba(6, 10, 16, 0.36)),
-    linear-gradient(90deg, rgba(4, 7, 12, 0.34), transparent 16%, transparent 84%, rgba(4, 7, 12, 0.34));
+    linear-gradient(180deg, rgba(6, 10, 16, 0.18), transparent 20%, transparent 80%, rgba(6, 10, 16, 0.18)),
+    linear-gradient(90deg, rgba(4, 7, 12, 0.12), transparent 10%, transparent 90%, rgba(4, 7, 12, 0.12));
   pointer-events: none;
 }
 

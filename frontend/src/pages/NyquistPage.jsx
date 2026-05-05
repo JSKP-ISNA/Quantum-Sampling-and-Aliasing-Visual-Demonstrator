@@ -17,6 +17,7 @@ import { useSearchParams } from 'react-router-dom';
 import GlassCard from '../components/ui/GlassCard';
 import QuantumSlider from '../components/ui/QuantumSlider';
 import QuantumSelect from '../components/ui/QuantumSelect';
+import BlochSphere from '../components/BlochSphere';
 import './NyquistPage.css';
 
 function clamp(value, min, max) {
@@ -342,6 +343,10 @@ export default function NyquistPage() {
                 <Area type="monotone" dataKey="magnitude" stroke="#8fa9bf" fill="url(#gradSpectrum)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
+          </GlassCard>
+
+          <GlassCard title="Bloch Sphere Simulator" icon="Q" variant="purple" className="nyquist-chart-card">
+            <BlochSphere />
           </GlassCard>
         </div>
       </div>
